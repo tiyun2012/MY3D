@@ -3,6 +3,11 @@
 #include <cmath>
 #include <chrono> // For time-based rotation
 
+// Define M_PI if not defined
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 // Include glad
 #include <glad/glad.h>
 
@@ -35,7 +40,7 @@ GLFWwindow* window;
 int width = 800, height = 600;
 
 // Camera parameters
-float angleX = 0.0f, angleY = 0.0f, distance = 5.0f;
+float distance = 5.0f;
 
 // Timing variables for automatic rotation
 float deltaTime = 0.0f; // Time between current frame and last frame
@@ -101,6 +106,51 @@ public:
     }
 };
 
+// Forward declaration of Matrix4 for use in Quaternion
+class Matrix4;
+
+// Define a Quaternion class
+class Quaternion {
+public:
+    float w, x, y, z;
+
+    // Default constructor creates an identity quaternion
+    Quaternion() : w(1), x(0), y(0), z(0) {}
+
+    // Constructor with components
+    Quaternion(float wi, float xi, float yi, float zi) : w(wi), x(xi), y(yi), z(zi) {}
+
+    // Create a quaternion from an axis and angle (in degrees)
+    static Quaternion fromAxisAngle(const Vector3& axis, float angleDegrees) {
+        float angleRadians = angleDegrees * M_PI / 180.0f;
+        float halfAngle = angleRadians / 2.0f;
+        float sinHalfAngle = sinf(halfAngle);
+        return Quaternion(cosf(halfAngle),
+            axis.x * sinHalfAngle,
+            axis.y * sinHalfAngle,
+            axis.z * sinHalfAngle).normalized();
+    }
+
+    // Quaternion multiplication (combines rotations)
+    Quaternion operator*(const Quaternion& q) const {
+        return Quaternion(
+            w * q.w - x * q.x - y * q.y - z * q.z, // new w
+            w * q.x + x * q.w + y * q.z - z * q.y, // new x
+            w * q.y - x * q.z + y * q.w + z * q.x, // new y
+            w * q.z + x * q.y - y * q.x + z * q.w  // new z
+        );
+    }
+
+    // Normalize the quaternion to unit length
+    Quaternion normalized() const {
+        float len = sqrtf(w * w + x * x + y * y + z * z);
+        return Quaternion(w / len, x / len, y / len, z / len);
+    }
+
+    // Convert quaternion to a rotation matrix
+    Matrix4 toMatrix() const;
+};
+
 // Define a 4x4 matrix class
 class Matrix4 {
 public:
@@ -153,7 +203,7 @@ public:
      */
     static Matrix4 rotationAxis(const Vector3& axis, float angleDegrees) {
         Matrix4 result;
-        float angleRadians = angleDegrees * 3.14159265f / 180.0f;
+        float angleRadians = angleDegrees * M_PI / 180.0f;
         float c = cosf(angleRadians);
         float s = sinf(angleRadians);
         float t = 1 - c;
@@ -200,7 +250,7 @@ public:
      */
     static Matrix4 perspective(float fovYDegrees, float aspect, float zNear, float zFar) {
         Matrix4 result;
-        float f = 1.0f / tanf(fovYDegrees * 3.14159265f / 360.0f);
+        float f = 1.0f / tanf(fovYDegrees * M_PI / 360.0f);
 
         result.m[0] = f / aspect;
         result.m[1] = 0;
@@ -226,6 +276,37 @@ public:
     }
 };
 
+// Define the toMatrix function outside the Quaternion class
+Matrix4 Quaternion::toMatrix() const {
+    Matrix4 mat;
+    mat.loadIdentity();
+
+    mat.m[0] = 1 - 2 * (y * y + z * z);
+    mat.m[1] = 2 * (x * y + z * w);
+    mat.m[2] = 2 * (x * z - y * w);
+    mat.m[3] = 0;
+
+    mat.m[4] = 2 * (x * y - z * w);
+    mat.m[5] = 1 - 2 * (x * x + z * z);
+    mat.m[6] = 2 * (y * z + x * w);
+    mat.m[7] = 0;
+
+    mat.m[8] = 2 * (x * z + y * w);
+    mat.m[9] = 2 * (y * z - x * w);
+    mat.m[10] = 1 - 2 * (x * x + y * y);
+    mat.m[11] = 0;
+
+    mat.m[12] = 0;
+    mat.m[13] = 0;
+    mat.m[14] = 0;
+    mat.m[15] = 1;
+
+    return mat;
+}
+
+// Declare the global rotation quaternion
+Quaternion rotationGlobal;
+
 // Function prototypes
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -233,15 +314,7 @@ unsigned int createShaderProgram();
 void drawAxes(unsigned int shaderProgram);
 void updateCameraAngles();
 
-/*
- * framebuffer_size_callback:
- * Adjusts the OpenGL viewport when the window size changes.
- *
- * Parameters:
- * - window: The GLFW window that was resized.
- * - width: The new width of the window.
- * - height: The new height of the window.
- */
+// Define the framebuffer resize callback
 void framebuffer_size_callback(GLFWwindow* window, int w, int h)
 {
     width = w;
@@ -249,13 +322,7 @@ void framebuffer_size_callback(GLFWwindow* window, int w, int h)
     glViewport(0, 0, width, height);
 }
 
-/*
- * processInput:
- * Handles user input for zooming the camera in and out.
- *
- * Parameters:
- * - window: The GLFW window to poll input from.
- */
+// Define the input processing function
 void processInput(GLFWwindow* window)
 {
     const float distanceStep = 0.1f;
@@ -278,40 +345,32 @@ void processInput(GLFWwindow* window)
     }
 }
 
-/*
- * updateCameraAngles:
- * Automatically updates the camera's rotation angles based on the elapsed time.
- *
- * Mathematical Concept:
- * - The camera's horizontal angle (angleX) increases linearly over time to create a continuous rotation around the Y-axis.
- * - The vertical angle (angleY) oscillates sinusoidally to make the camera move up and down smoothly.
- *
- * Parameters:
- * - None
- */
+// Define the updateCameraAngles function
 void updateCameraAngles()
 {
+    // Define the rotation speed in degrees per second
     const float rotationSpeed = 20.0f; // Degrees per second
 
-    // Increment angleX based on rotation speed and time elapsed since last frame
-    angleX += rotationSpeed * deltaTime;
-    if (angleX >= 360.0f) angleX -= 360.0f;
+    // Calculate the incremental rotation angle based on deltaTime
+    float angleIncrement = rotationSpeed * deltaTime;
 
-    // Oscillate angleY between -15 and +15 degrees using a sine wave
-    angleY = 15.0f * sinf(glfwGetTime());
+    // Create a quaternion representing the incremental rotation around the Y-axis
+    Quaternion q = Quaternion::fromAxisAngle(Vector3(0.0f, 1.0f, 0.0f), angleIncrement);
+
+    // Update the global rotation quaternion by applying the incremental rotation
+    // This could be extended to include rotations around other axes if needed
+    // For example, to rotate around the X-axis as well, create another quaternion and multiply
+    // Quaternion qx = Quaternion::fromAxisAngle(Vector3(1.0f, 0.0f, 0.0f), angleIncrement);
+    // rotationGlobal = qx * rotationGlobal;
+
+    // Apply the incremental rotation around the Y-axis
+    rotationGlobal = q * rotationGlobal;
+
+    // Ensure the quaternion remains normalized to prevent error accumulation
+    rotationGlobal = rotationGlobal.normalized();
 }
 
-/*
- * createShaderProgram:
- * Compiles the vertex and fragment shaders, links them into a shader program, and returns the program ID.
- *
- * Mathematical Concept:
- * - Shaders are small programs that run on the GPU to handle rendering. The vertex shader transforms vertex positions,
- *   and the fragment shader determines the color of each pixel.
- *
- * Returns:
- * - The ID of the compiled and linked shader program.
- */
+// Define the shader compilation and linking function
 unsigned int createShaderProgram()
 {
     int success;
@@ -364,17 +423,7 @@ unsigned int createShaderProgram()
     return shaderProgram;
 }
 
-/*
- * drawAxes:
- * Renders the X, Y, and Z axes centered at the origin.
- *
- * Mathematical Concepts:
- * - Model-View-Projection (MVP) Matrix: Transforms vertex positions from model space to clip space.
- * - Line Primitives: Used to draw the axes as lines in 3D space.
- *
- * Parameters:
- * - shaderProgram: The ID of the shader program to use for rendering.
- */
+// Define the drawAxes function
 void drawAxes(unsigned int shaderProgram)
 {
     // Define axis vertices: each axis is represented by two points (origin to positive direction)
@@ -408,31 +457,42 @@ void drawAxes(unsigned int shaderProgram)
         glEnableVertexAttribArray(0);
     }
 
-    // Calculate view and projection matrices manually
+    /*
+     * View and Projection Matrices:
+     *
+     * Instead of using Euler angles, we now use quaternions to handle camera rotations.
+     * The quaternion represents the camera's orientation, ensuring smooth and gimbal-lock-free rotations.
+     */
 
-    // Model matrix (identity) since axes are centered at the origin
+     // Model matrix (identity) since axes are centered at the origin
     Matrix4 model;
 
     /*
-     * Camera Position Calculation:
+     * Camera Position Calculation using Quaternion:
      *
-     * Using spherical coordinates to position the camera around the target (origin).
+     * Instead of using spherical coordinates with Euler angles, we now use the rotation quaternion to determine the camera's position.
      *
-     * position.x = distance * cos(angleY) * sin(angleX)
-     * position.y = distance * sin(angleY)
-     * position.z = distance * cos(angleY) * cos(angleX)
-     *
-     * This places the camera at a certain distance from the origin, rotated by angleX around the Y-axis
-     * and by angleY up/down.
+     * Mathematical Concept:
+     * - The rotation quaternion represents the camera's orientation.
+     * - To position the camera at a certain distance from the target, we apply the quaternion rotation to a vector pointing along the negative Z-axis.
+     * - This rotated vector is then scaled by the desired distance and added to the target position.
      */
-    float radAngleX = angleX * 3.14159265f / 180.0f;
-    float radAngleY = angleY * 3.14159265f / 180.0f;
-
     Vector3 target(0.0f, 0.0f, 0.0f); // The point the camera is looking at
-    Vector3 position;
-    position.x = target.x + distance * cosf(radAngleY) * sinf(radAngleX);
-    position.y = target.y + distance * sinf(radAngleY);
-    position.z = target.z + distance * cosf(radAngleY) * cosf(radAngleX);
+
+    // Define the initial direction vector (e.g., along the negative Z-axis)
+    Vector3 initialDirection(0.0f, 0.0f, -1.0f);
+
+    // Rotate the initial direction vector using the rotation quaternion
+    Matrix4 rotationMatrix = rotationGlobal.toMatrix();
+
+    Vector3 direction(
+        rotationMatrix.m[0] * initialDirection.x + rotationMatrix.m[4] * initialDirection.y + rotationMatrix.m[8] * initialDirection.z,
+        rotationMatrix.m[1] * initialDirection.x + rotationMatrix.m[5] * initialDirection.y + rotationMatrix.m[9] * initialDirection.z,
+        rotationMatrix.m[2] * initialDirection.x + rotationMatrix.m[6] * initialDirection.y + rotationMatrix.m[10] * initialDirection.z
+    );
+
+    // Calculate the camera position by moving along the rotated direction vector by the specified distance
+    Vector3 position = target + direction * distance;
 
     // Define the up vector for the camera
     Vector3 up(0.0f, 1.0f, 0.0f);
@@ -440,14 +500,8 @@ void drawAxes(unsigned int shaderProgram)
     /*
      * View Matrix (LookAt Implementation):
      *
-     * The view matrix transforms world coordinates to camera (view) coordinates.
-     * It is constructed using the camera's position, target, and up vector.
-     *
-     * Mathematical Steps:
-     * 1. Calculate the forward vector (f) as the normalized vector from position to target.
-     * 2. Calculate the right vector (s) as the normalized cross product of f and up.
-     * 3. Recalculate the up vector (u) as the cross product of s and f.
-     * 4. Construct the view matrix using s, u, and -f, and apply a translation to move the world to the camera's position.
+     * Using the rotated direction vector to create the view matrix.
+     * This ensures that the camera's orientation matches the quaternion rotation.
      */
     Vector3 f = (target - position).normalized(); // Forward vector
     Vector3 s = f.cross(up).normalized();         // Right vector
@@ -521,11 +575,6 @@ void drawAxes(unsigned int shaderProgram)
     glBindVertexArray(0);
 }
 
-/*
- * main:
- * The entry point of the application. Initializes GLFW and glad, sets up the window, compiles shaders,
- * and enters the render loop where it continuously updates the camera and renders the scene.
- */
 int main()
 {
     // Initialize GLFW
@@ -545,7 +594,7 @@ int main()
 #endif
 
     // Create a GLFWwindow object
-    window = glfwCreateWindow(width, height, "Camera Rotation Around Center", NULL, NULL);
+    window = glfwCreateWindow(width, height, "Camera Rotation Around Center with Quaternions", NULL, NULL);
     if (window == NULL)
     {
         std::cerr << "Failed to create GLFW window" << std::endl;
