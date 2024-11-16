@@ -1,0 +1,10 @@
+.vs/
+Camera/x64/
+TISUN/x64/
+glad-master/
+glad.zip
+tidev/build/
+tidev/glad/
+tidev/vcpkg/
+vcpkg/
+x64/
