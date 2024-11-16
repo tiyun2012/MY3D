@@ -94,6 +94,9 @@ public:
     }
 
     // Cross product
+    /*
+    
+    */
     Vector3 cross(const Vector3& v) const {
         return Vector3(y * v.z - z * v.y,
             z * v.x - x * v.z,
