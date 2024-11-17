@@ -8,3 +8,4 @@ tidev/glad/
 tidev/vcpkg/
 vcpkg/
 x64/
+thirdParty/
