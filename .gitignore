@@ -9,3 +9,5 @@ tidev/vcpkg/
 vcpkg/
 x64/
 thirdParty/
+bin/
+utils\utilstest.cpp

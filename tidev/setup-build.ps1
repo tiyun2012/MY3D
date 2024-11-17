@@ -213,7 +213,7 @@ Write-ProgressMessage "Configuring and building the project"
 $toolchainFile = Join-Path $vcpkgDir $vcpkgToolchain
 
 try {
-    cmake -B $buildDir -S $PSScriptRoot `
+    cmake -G "Visual Studio 17 2022" -B $buildDir -S $PSScriptRoot `
         -DCMAKE_TOOLCHAIN_FILE="$toolchainFile" `
         -DCMAKE_BUILD_TYPE=Release `
         -DVCPKG_TARGET_TRIPLET=$vcpkgTriplet
