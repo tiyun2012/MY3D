@@ -1,81 +1,235 @@
-# Define parameters for build, vcpkg, glad, and glfw directories relative to the script location
+<#
+.SYNOPSIS
+    Sets up the C++ project environment by installing dependencies and building the project.
+
+.DESCRIPTION
+    This script automates the setup process by cloning vcpkg, installing GLFW, building GLAD, and configuring the project with CMake.
+
+.PARAMETER buildDir
+    The directory where the build files will be generated.
+
+.PARAMETER vcpkgDir
+    The directory where vcpkg will be cloned.
+
+.PARAMETER gladZipUrl
+    The URL to download the GLAD source code.
+
+.PARAMETER gladZipFile
+    The local path for the downloaded GLAD zip file.
+
+.PARAMETER gladExtractDir
+    The directory where GLAD will be extracted.
+
+.PARAMETER gladDestDir
+    The destination directory for GLAD include and source files.
+
+.PARAMETER vcpkgToolchain
+    The path to the vcpkg toolchain file.
+
+.PARAMETER vcpkgTriplet
+    The vcpkg triplet to use for installing packages.
+
+.EXAMPLE
+    .\setup.ps1
+#>
+
 param(
-    [string]$buildDir = ".\build",
-    [string]$vcpkgDir = ".\vcpkg",
+    [string]$buildDir = (Join-Path $PSScriptRoot "build"),
+    [string]$vcpkgDir = (Join-Path $PSScriptRoot "vcpkg"),
     [string]$gladZipUrl = "https://github.com/Dav1dde/glad/archive/refs/heads/master.zip",
-    [string]$gladZipFile = ".\glad.zip",
-    [string]$gladExtractDir = ".\glad-master",
-    [string]$gladDestDir = ".\thirdParty\glad",
-    [string]$vcpkgToolchain = "scripts/buildsystems/vcpkg.cmake"
+    [string]$gladZipFile = (Join-Path $PSScriptRoot "glad.zip"),
+    [string]$gladExtractDir = (Join-Path $PSScriptRoot "glad-master"),
+    [string]$gladDestDir = (Join-Path $PSScriptRoot "thirdParty\glad"),
+    [string]$vcpkgToolchain = "scripts\buildsystems\vcpkg.cmake",
+    [string]$vcpkgTriplet = "x64-windows-static"
 )
 
-function Show-Progress {
-    param([string]$message)
-    Write-Host "=== $message ==="
+function Write-ProgressMessage {
+    param([string]$Message)
+    Write-Host "=== $Message ==="
 }
 
 function Test-GladFiles {
-    if ((Test-Path "$gladDestDir\include\glad\glad.h") -and 
-        (Test-Path "$gladDestDir\include\KHR\khrplatform.h") -and 
-        (Test-Path "$gladDestDir\src\glad.c")) {
-        return $true
-    } else {
-        return $false
+    return (Test-Path (Join-Path $gladDestDir "include\glad\glad.h")) -and
+           (Test-Path (Join-Path $gladDestDir "include\KHR\khrplatform.h")) -and
+           (Test-Path (Join-Path $gladDestDir "src\glad.c"))
+}
+
+function Test-Dependencies {
+    $dependencies = @('git', 'cmake')
+    foreach ($dep in $dependencies) {
+        if (-not (Get-Command $dep -ErrorAction SilentlyContinue)) {
+            Write-Error "$dep is not installed or not found in PATH."
+            exit 1
+        }
     }
 }
+
+function Get-MSBuildPath {
+    $vswherePath = Join-Path "${env:ProgramFiles(x86)}" "Microsoft Visual Studio\Installer\vswhere.exe"
+    if (-not (Test-Path $vswherePath)) {
+        Write-Error "vswhere.exe not found. Please ensure Visual Studio is installed."
+        exit 1
+    }
+
+    $vsPath = & $vswherePath -latest -products * -requires Microsoft.Component.MSBuild -property installationPath -format value
+    if (-not $vsPath) {
+        Write-Error "Visual Studio with MSBuild not found."
+        exit 1
+    }
+
+    $msbuildPath = Join-Path $vsPath "MSBuild\Current\Bin\MSBuild.exe"
+    if (-not (Test-Path $msbuildPath)) {
+        Write-Error "MSBuild.exe not found."
+        exit 1
+    }
+
+    return $msbuildPath
+}
+
+# Start of the script
+Test-Dependencies
 
 # Step 1: Clone and bootstrap vcpkg
 if (-Not (Test-Path -Path $vcpkgDir)) {
-    Show-Progress "Cloning vcpkg"
-    git clone https://github.com/microsoft/vcpkg.git $vcpkgDir
+    Write-ProgressMessage "Cloning vcpkg"
+    try {
+        git clone https://github.com/microsoft/vcpkg.git $vcpkgDir
+    } catch {
+        Write-Error "Failed to clone vcpkg repository."
+        exit 1
+    }
 }
-Show-Progress "Bootstrapping vcpkg"
-& "$vcpkgDir\bootstrap-vcpkg.bat"
+
+Write-ProgressMessage "Bootstrapping vcpkg"
+try {
+    & (Join-Path $vcpkgDir "bootstrap-vcpkg.bat")
+} catch {
+    Write-Error "Failed to bootstrap vcpkg."
+    exit 1
+}
 
 # Step 2: Install GLFW (static) using vcpkg
-Show-Progress "Installing GLFW (static) using vcpkg"
-& "$vcpkgDir\vcpkg.exe" install glfw3:x64-windows-static
+Write-ProgressMessage "Installing GLFW ($vcpkgTriplet) using vcpkg"
+try {
+    & (Join-Path $vcpkgDir "vcpkg.exe") install "glfw3:$vcpkgTriplet" --triplet $vcpkgTriplet
+} catch {
+    Write-Error "Failed to install GLFW using vcpkg."
+    exit 1
+}
 
 # Step 3: Download and build GLAD if not already set up
 if (Test-GladFiles) {
-    Show-Progress "GLAD is already set up"
+    Write-ProgressMessage "GLAD is already set up"
 } else {
     if (-Not (Test-Path -Path $gladZipFile)) {
-        Show-Progress "Downloading GLAD"
-        Invoke-WebRequest -Uri $gladZipUrl -OutFile $gladZipFile
+        Write-ProgressMessage "Downloading GLAD"
+        try {
+            Invoke-WebRequest -Uri $gladZipUrl -OutFile $gladZipFile -ErrorAction Stop
+        } catch {
+            Write-Error "Failed to download GLAD."
+            exit 1
+        }
     }
+
     if (-Not (Test-Path -Path $gladExtractDir)) {
-        Show-Progress "Extracting GLAD"
-        Expand-Archive -Path $gladZipFile -DestinationPath .
+        Write-ProgressMessage "Extracting GLAD"
+        try {
+            Expand-Archive -Path $gladZipFile -DestinationPath $PSScriptRoot -Force -ErrorAction Stop
+        } catch {
+            Write-Error "Failed to extract GLAD."
+            exit 1
+        }
     }
 
-    Show-Progress "Generating GLAD project with CMake"
-    $gladBuildDir = "$gladExtractDir\build"
-    if (-Not (Test-Path -Path $gladBuildDir)) { New-Item -ItemType Directory -Path $gladBuildDir }
-    cmake -B $gladBuildDir -S $gladExtractDir -G "Visual Studio 17 2022" `
-        -DGLAD_PROFILE="core" -DGLAD_API="gl=4.6" -DGLAD_GENERATOR="c" -DBUILD_SHARED_LIBS=OFF
+    Write-ProgressMessage "Generating GLAD project with CMake"
+    $gladBuildDir = Join-Path $gladExtractDir "build"
+    if (-Not (Test-Path -Path $gladBuildDir)) { New-Item -ItemType Directory -Path $gladBuildDir | Out-Null }
 
-    Show-Progress "Building GLAD"
-    & "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" `
-        "$gladBuildDir\ALL_BUILD.vcxproj" /p:Configuration=Release
+    # Detecting the Visual Studio generator
+    $cmakeGenerator = ""
+    $vswherePath = Join-Path "${env:ProgramFiles(x86)}" "Microsoft Visual Studio\Installer\vswhere.exe"
+    if (Test-Path $vswherePath) {
+        $vsVersion = (& $vswherePath -latest -products * -property catalog_productLineVersion -format value)
+        if ($vsVersion) {
+            $cmakeGenerator = "Visual Studio $vsVersion"
+        } else {
+            Write-Warning "Could not detect Visual Studio version. Defaulting to Visual Studio 17 2022."
+            $cmakeGenerator = "Visual Studio 17 2022"
+        }
+    } else {
+        Write-Warning "vswhere.exe not found. Defaulting to Visual Studio 17 2022."
+        $cmakeGenerator = "Visual Studio 17 2022"
+    }
 
-    Show-Progress "Copying GLAD build files"
-    if (-Not (Test-Path "$gladDestDir\include\glad")) { New-Item -ItemType Directory -Path "$gladDestDir\include\glad" -Force }
-    if (-Not (Test-Path "$gladDestDir\include\KHR")) { New-Item -ItemType Directory -Path "$gladDestDir\include\KHR" -Force }
-    if (-Not (Test-Path "$gladDestDir\src")) { New-Item -ItemType Directory -Path "$gladDestDir\src" -Force }
+    # Generate GLAD project
+    try {
+        cmake -B $gladBuildDir -S $gladExtractDir -G "$cmakeGenerator" `
+            -DGLAD_PROFILE="core" -DGLAD_API="gl=4.6" -DGLAD_GENERATOR="c" -DBUILD_SHARED_LIBS=OFF
+    } catch {
+        Write-Error "Failed to generate GLAD project with CMake."
+        exit 1
+    }
 
-    Copy-Item -Path "$gladBuildDir\include\glad\glad.h" -Destination "$gladDestDir\include\glad" -Force
-    Copy-Item -Path "$gladBuildDir\include\KHR\khrplatform.h" -Destination "$gladDestDir\include\KHR" -Force
-    Copy-Item -Path "$gladBuildDir\src\glad.c" -Destination "$gladDestDir\src" -Force
+    Write-ProgressMessage "Building GLAD"
+    $msbuildPath = Get-MSBuildPath
+    try {
+        & $msbuildPath (Join-Path $gladBuildDir "ALL_BUILD.vcxproj") /p:Configuration=Release
+    } catch {
+        Write-Error "Failed to build GLAD with MSBuild."
+        exit 1
+    }
+
+    Write-ProgressMessage "Copying GLAD build files"
+    try {
+        # Ensure destination directories exist
+        $gladIncludeDir = Join-Path $gladDestDir "include"
+        $gladSrcDir = Join-Path $gladDestDir "src"
+        New-Item -ItemType Directory -Path (Join-Path $gladIncludeDir "glad") -Force | Out-Null
+        New-Item -ItemType Directory -Path (Join-Path $gladIncludeDir "KHR") -Force | Out-Null
+        New-Item -ItemType Directory -Path $gladSrcDir -Force | Out-Null
+
+        # Copy files
+        Copy-Item -Path (Join-Path $gladBuildDir "include\glad\glad.h") -Destination (Join-Path $gladIncludeDir "glad") -Force
+        Copy-Item -Path (Join-Path $gladBuildDir "include\KHR\khrplatform.h") -Destination (Join-Path $gladIncludeDir "KHR") -Force
+        Copy-Item -Path (Join-Path $gladBuildDir "src\glad.c") -Destination $gladSrcDir -Force
+    } catch {
+        Write-Error "Failed to copy GLAD build files."
+        exit 1
+    }
 
     # Clean up
-    Remove-Item -Recurse -Force $gladExtractDir
-    Remove-Item -Force $gladZipFile
+    Write-ProgressMessage "Cleaning up temporary files"
+    try {
+        Remove-Item -Recurse -Force $gladExtractDir
+        Remove-Item -Force $gladZipFile
+    } catch {
+        Write-Warning "Failed to clean up temporary files."
+    }
 }
 
 # Step 4: Build your project
-Show-Progress "Configuring and building the project"
-cmake -B $buildDir -S . -DCMAKE_TOOLCHAIN_FILE="$vcpkgDir\$vcpkgToolchain" -DCMAKE_BUILD_TYPE=Release
-cmake --build $buildDir --config Release
+Write-ProgressMessage "Configuring and building the project"
+$toolchainFile = Join-Path $vcpkgDir $vcpkgToolchain
 
-Show-Progress "Build process completed successfully!"
+try {
+    cmake -B $buildDir -S $PSScriptRoot `
+        -DCMAKE_TOOLCHAIN_FILE="$toolchainFile" `
+        -DCMAKE_BUILD_TYPE=Release `
+        -DVCPKG_TARGET_TRIPLET=$vcpkgTriplet
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "CMake configuration failed."
+        exit $LASTEXITCODE
+    }
+
+    cmake --build $buildDir --config Release
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "CMake build failed."
+        exit $LASTEXITCODE
+    }
+} catch {
+    Write-Error "Failed to configure and build the project."
+    exit 1
+}
+
+Write-ProgressMessage "Build process completed successfully!"
