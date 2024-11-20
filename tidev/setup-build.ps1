@@ -29,10 +29,13 @@
 .PARAMETER vcpkgTriplet
     The vcpkg triplet to use for installing packages.
 
-.EXAMPLE
+. 
     .\setup.ps1
 #>
 
+# import module
+# Import the module
+# $modulePath = Join-Path $PSScriptRoot".\\powershellModule.psm1"
 param(
     [string]$buildDir = (Join-Path $PSScriptRoot "build"),
     [string]$vcpkgDir = (Join-Path $PSScriptRoot "vcpkg"),
@@ -45,7 +48,8 @@ param(
 )
 
 function Write-ProgressMessage {
-    param([string]$Message)
+    param([string]$Message
+    )
     Write-Host "=== $Message ==="
 }
 
@@ -85,6 +89,26 @@ function Get-MSBuildPath {
     }
 
     return $msbuildPath
+}
+function New_folder {
+    param (
+        [string]$thirdPartyRoot=".\ThirdParty"
+    )
+    
+    # make third party root directory
+
+$message="checking the existing directory: $thirdPartyRoot"
+Write-Host $message -ForegroundColor DarkGreen
+if (-not(powershellModule\Test-FolderExistence -FolderName $thirdPartyRoot))
+    {
+        Write-Host "making  $thirdPartyRoot" -ForegroundColor Cyan
+        Write-Output "Creating folder: $thirdPartyRoot"
+        New-Item -ItemType Directory -Path $thirdPartyRoot
+    }
+else
+{
+    Write-Host "The directory already exists: $thirdPartyRoot" -ForegroundColor Green
+}
 }
 
 # Start of the script

@@ -387,3 +387,39 @@ function Test-Uri
     }
 }
 
+function Test-Dependencies {
+    param(
+        $dependencies = @('git', 'cmake')
+    )
+    # $dependencies = @('git', 'cmake')
+    foreach ($dep in $dependencies) {
+        if (-not (Get-Command $dep -ErrorAction SilentlyContinue)) {
+            Write-Error "$dep is not installed or not found in PATH."
+            exit 1
+        }
+        else {
+            write-Host "$dep is already installed"
+        }
+    }
+}
+function Get-MSBuildPath {
+    $vswherePath = Join-Path "${env:ProgramFiles(x86)}" "Microsoft Visual Studio\Installer\vswhere.exe"
+    if (-not (Test-Path $vswherePath)) {
+        Write-Error "vswhere.exe not found. Please ensure Visual Studio is installed."
+        exit 1
+    }
+
+    $vsPath = & $vswherePath -latest -products * -requires Microsoft.Component.MSBuild -property installationPath -format value
+    if (-not $vsPath) {
+        Write-Error "Visual Studio with MSBuild not found."
+        exit 1
+    }
+
+    $msbuildPath = Join-Path $vsPath "MSBuild\Current\Bin\MSBuild.exe"
+    if (-not (Test-Path $msbuildPath)) {
+        Write-Error "MSBuild.exe not found."
+        exit 1
+    }
+
+    return $msbuildPath
+}
