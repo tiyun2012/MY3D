@@ -11,3 +11,8 @@ x64/
 thirdParty/
 bin/
 utils\utilstest.cpp
+ThirdParty
+nanoflann-master
+devkit2024
+eigen-master
+glm-master
