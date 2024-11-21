@@ -59,6 +59,39 @@ function Test-GladFiles {
            (Test-Path (Join-Path $gladDestDir "src\glad.c"))
 }
 
+function Get-VCPKG {
+    param (
+        [String] $vcpkgDir=$vcpkgDir)
+
+    if (-not $vcpkgDir) {
+        Write-Error "vcpkgDir parameter is required."
+        return $false
+    }
+
+    if (Test-Path (Join-Path $vcpkgDir 'vcpkg.exe')) {
+        Write-ProgressMessage "vcpkg.exe is available"
+        return $true
+    }
+
+    Write-ProgressMessage "Cloning vcpkg"
+    try {
+        git clone https://github.com/microsoft/vcpkg.git $vcpkgDir
+    } catch {
+        Write-Error "Failed to clone vcpkg repository: $_"
+        return $false
+    }
+
+    Write-ProgressMessage "Bootstrapping vcpkg"
+    try {
+        & (Join-Path $vcpkgDir "bootstrap-vcpkg.bat")
+    } catch {
+        Write-Error "Failed to bootstrap vcpkg: $_"
+        return $false
+    }
+
+    return $true
+}
+
 function Test-Dependencies {
     $dependencies = @('git', 'cmake')
     foreach ($dep in $dependencies) {
@@ -110,38 +143,70 @@ else
     Write-Host "The directory already exists: $thirdPartyRoot" -ForegroundColor Green
 }
 }
-
+function Install-Package 
+{
+    param (
+        [string] $packageName="glfw3",
+        [string] $vcpkgDir=$vcpkgDir
+    )
+    # Write-ProgressMessage "Installing GLFW ($vcpkgTriplet) using vcpkg"
+    try 
+    {
+        & (Join-Path $vcpkgDir "vcpkg.exe") install ("${packageName}:$vcpkgTriplet") --triplet $vcpkgTriplet
+    } 
+    catch 
+    {
+        Write-Error "Failed to install GLFW using vcpkg."
+        return $false
+    }
+    return $true
+}
 # Start of the script
 Test-Dependencies
 
 # Step 1: Clone and bootstrap vcpkg
-if (-Not (Test-Path -Path $vcpkgDir)) {
-    Write-ProgressMessage "Cloning vcpkg"
-    try {
-        git clone https://github.com/microsoft/vcpkg.git $vcpkgDir
-    } catch {
-        Write-Error "Failed to clone vcpkg repository."
-        exit 1
-    }
-}
+# if (-Not (Test-Path -Path $vcpkgDir)) {
+#     Write-ProgressMessage "Cloning vcpkg"
+#     try {
+#         git clone https://github.com/microsoft/vcpkg.git $vcpkgDir
+#     } catch {
+#         Write-Error "Failed to clone vcpkg repository."
+#         exit 1
+#     }
+# }
 
-Write-ProgressMessage "Bootstrapping vcpkg"
-try {
-    & (Join-Path $vcpkgDir "bootstrap-vcpkg.bat")
-} catch {
-    Write-Error "Failed to bootstrap vcpkg."
+# Write-ProgressMessage "Bootstrapping vcpkg"
+# try {
+#     & (Join-Path $vcpkgDir "bootstrap-vcpkg.bat")
+# } catch {
+#     Write-Error "Failed to bootstrap vcpkg."
+#     exit 1
+# }
+if (-not(Get-VCPKG $vcpkgDir))
+{
+    Write-Error "Failed to clone or bootstrap vcpkg."
     exit 1
 }
+Write-Host "------------build glfw3------------" -BackgroundColor Cyan
+Install-Package "glfw3"
+Write-Host "------------build glew------------" -BackgroundColor Cyan
 
-# Step 2: Install GLFW (static) using vcpkg
-Write-ProgressMessage "Installing GLFW ($vcpkgTriplet) using vcpkg"
-try {
-    & (Join-Path $vcpkgDir "vcpkg.exe") install "glfw3:$vcpkgTriplet" --triplet $vcpkgTriplet
-} catch {
-    Write-Error "Failed to install GLFW using vcpkg."
-    exit 1
-}
+Install-Package "glew"
 
+Write-Host "------------build glad------------" -BackgroundColor Cyan
+
+Install-Package "glad"
+# # Step 2: Install GLFW (static) using vcpkg
+# Write-ProgressMessage "Installing GLFW ($vcpkgTriplet) using vcpkg"
+# try {
+#     & (Join-Path $vcpkgDir "vcpkg.exe") install "glfw3:$vcpkgTriplet" --triplet $vcpkgTriplet
+# } catch {
+#     Write-Error "Failed to install GLFW using vcpkg."
+#     exit 1
+# }
+
+
+<#
 # Step 3: Download and build GLAD if not already set up
 if (Test-GladFiles) {
     Write-ProgressMessage "GLAD is already set up"
@@ -257,3 +322,4 @@ try {
 }
 
 Write-ProgressMessage "Build process completed successfully!"
+#>
