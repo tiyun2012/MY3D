@@ -189,11 +189,11 @@ if (-not(Get-VCPKG $vcpkgDir))
 }
 Write-Host "------------build glfw3------------" -BackgroundColor Cyan
 Install-Package "glfw3"
-Write-Host "------------build glew------------" -BackgroundColor Cyan
+Write-Host "===========build glew===========" -BackgroundColor Cyan
 
 Install-Package "glew"
 
-Write-Host "------------build glad------------" -BackgroundColor Cyan
+Write-Host "+++++++++++build glad+++++++++++" -BackgroundColor Cyan
 
 Install-Package "glad"
 # # Step 2: Install GLFW (static) using vcpkg
