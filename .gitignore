@@ -11,6 +11,8 @@ x64/
 thirdParty/
 bin/
 utils\utilstest.cpp
-build/
-tidev/.vscode/
-.vscode/
+ThirdParty
+nanoflann-master
+devkit2024
+eigen-master
+glm-master
