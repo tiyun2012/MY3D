@@ -423,3 +423,58 @@ function Get-MSBuildPath {
 
     return $msbuildPath
 }
+
+function New-folder {
+    param (
+    [Parameter(Mandatory=$true)]    
+    [string] $Name #include path
+    )
+    if ((Test-Path $Name))
+    {
+        Write-Host "the $Name is already available"
+        return $true
+    }
+    [string]$newFoler=New-Item -ItemType Directory -Path $Name 
+    return $newFoler
+}
+
+function Test-FilesExistence {
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$RootPath,           # Root path to check for files
+        
+        [Parameter(Mandatory=$true)]
+        [string[]]$FileList          # List of files to check
+    )
+
+    # Initialize arrays for tracking results
+    $missingFiles = @()
+    $availableFiles = @()
+
+    Write-Host "--- Checking Files in $RootPath ---" -ForegroundColor Yellow
+
+    # Iterate over each file in the list
+    foreach ($File in $FileList) {
+        $FullFilePath = Join-Path -Path $RootPath -ChildPath $File
+
+        if (Test-Path $FullFilePath) {
+            Write-Host "Found: $File" -ForegroundColor Green
+            $availableFiles += $File
+        } else {
+            Write-Host "Missing: $File" -ForegroundColor Red
+            $missingFiles += $File
+        }
+    }
+
+    # Summary
+    Write-Host "Summary:" -ForegroundColor Cyan
+    Write-Host "Available Files: $($availableFiles.Count)" -ForegroundColor Green
+    Write-Host "Missing Files: $($missingFiles.Count)" -ForegroundColor Red
+    if ($missingFiles.Count -gt 0) {
+        Write-Host "Missing File List:" -ForegroundColor Yellow
+        $missingFiles | ForEach-Object { Write-Host $_ -ForegroundColor Red }
+    }
+
+    # Return missing files for further use if needed
+    return $missingFiles
+}

@@ -43,6 +43,37 @@ $Imgui=Join-Path $thirdPartyRoot "Imgui"
 powershellModule\New-Folder -Name $Imgui
 try
     {
+
+        # Extract specific Dear ImGui files
+        $imguiRoot = "$thirdPartyRoot\imgui"
+        $imguiList = @("imgui_widgets.cpp","imgui_demo.cpp","imgui_draw.cpp","imgui.h",
+                     "imgui.cpp","imstb_truetype.h",
+                     "imgui_tables.cpp","imgui_internal.h","imconfig.h","imstb_rectpack.h","imstb_textedit.h",
+                     "backends/imgui_impl_glfw.h","backends/imgui_impl_opengl3.h")
+                     # dowload in incoppy
+        if ((powershellModule\Test-FilesExistence -RootPath $imguiRoot -FileList $imguiList))
+        {
+            powershellModule\Invoke-WebFile -Url $imguiUri -DestinationPath $imguiZip
+            powershellModule\Expand-SpecificFilesFromZip -zipFilePath $imguiZip -destinationPath $imguiRoot -filesTracked $imguiList        }
+    }
+catch
+{
+    Write-Error "Failed to download: $_"
+    return
+}
+
+
+
+# Glew
+Write-Host "--- Checking  Glew:: -----" -ForegroundColor Yellow
+$glewUri = "https://github.com/nigels-com/glew/archive/refs/heads/master.zip"
+$glewZip=Join-Path $thirdPartyRoot Glewfile.zip
+
+$glewRoot=Join-Path $thirdPartyRoot "glew"
+powershellModule\New-Folder -Name $glewRoot
+powershellModule\Invoke-WebFile -Url $glewUri -DestinationPath $glewZip
+try
+    {
         powershellModule\Invoke-WebFile -Url $imguiUri -DestinationPath $imguiZip
         # Extract specific Dear ImGui files
         $imguiRoot = "$thirdPartyRoot\imgui"
@@ -57,7 +88,6 @@ catch
     Write-Error "Failed to download: $_"
     return
 }
-
 
 
 
