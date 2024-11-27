@@ -39,29 +39,34 @@ $imguiUri = "https://github.com/ocornut/imgui/archive/refs/heads/master.zip"
 $imguiZip=Join-Path $thirdPartyRoot imguifile.zip
 # $imguiZip="${PSScriptRoot}\${thirdPartyRoot}"
 
-$Imgui=Join-Path $thirdPartyRoot "Imgui"
-powershellModule\New-Folder -Name $Imgui
-try
-    {
-
-        # Extract specific Dear ImGui files
-        $imguiRoot = "$thirdPartyRoot\imgui"
-        $imguiList = @("imgui_widgets.cpp","imgui_demo.cpp","imgui_draw.cpp","imgui.h",
-                     "imgui.cpp","imstb_truetype.h",
-                     "imgui_tables.cpp","imgui_internal.h","imconfig.h","imstb_rectpack.h","imstb_textedit.h",
-                     "backends/imgui_impl_glfw.h","backends/imgui_impl_opengl3.h")
-                     # dowload in incoppy
-        if ((powershellModule\Test-FilesExistence -RootPath $imguiRoot -FileList $imguiList))
-        {
-            powershellModule\Invoke-WebFile -Url $imguiUri -DestinationPath $imguiZip
-            powershellModule\Expand-SpecificFilesFromZip -zipFilePath $imguiZip -destinationPath $imguiRoot -filesTracked $imguiList        }
-    }
-catch
+$imguiRoot=Join-Path $thirdPartyRoot "Imgui"
+powershellModule\New-Folder -Name $imguiRoot
+$imguiList = @("imgui_widgets.cpp","imgui_demo.cpp","imgui_draw.cpp","imgui.h",
+                        "imgui.cpp","imstb_truetype.h",
+                        "imgui_tables.cpp","imgui_internal.h","imconfig.h","imstb_rectpack.h","imstb_textedit.h",
+                        "backends/imgui_impl_glfw.h","backends/imgui_impl_opengl3.h")
+if ((powershellModule\Test-FilesMissing -RootPath $imguiRoot -FileList $imguiList))
 {
-    Write-Error "Failed to download: $_"
-    return
-}
+    try
+        {
 
+            # Extract specific Dear ImGui files
+            
+                        # dowload and copy files
+                powershellModule\Invoke-WebFile -Url $imguiUri -DestinationPath $imguiZip
+                powershellModule\Expand-SpecificFilesFromZip -zipFilePath $imguiZip -destinationPath $imguiRoot -filesTracked $imguiList
+                Remove-Item $imguiZip
+        }
+                
+    catch
+        {
+            Write-Error "Failed to download: $_"
+            return
+        }
+}
+else {
+    Write-Host "-------------imgui is available------------------------" -ForegroundColor Yellow
+}
 
 
 # Glew
@@ -74,14 +79,8 @@ powershellModule\New-Folder -Name $glewRoot
 powershellModule\Invoke-WebFile -Url $glewUri -DestinationPath $glewZip
 try
     {
-        powershellModule\Invoke-WebFile -Url $imguiUri -DestinationPath $imguiZip
-        # Extract specific Dear ImGui files
-        $imguiRoot = "$thirdPartyRoot\imgui"
-        $imguiList = @("imgui_widgets.cpp","imgui_demo.cpp","imgui_draw.cpp","imgui.h",
-                     "imgui.cpp","imstb_truetype.h",
-                     "imgui_tables.cpp","imgui_internal.h","imconfig.h","imstb_rectpack.h","imstb_textedit.h",
-                     "backends/imgui_impl_glfw.h","backends/imgui_impl_opengl3.h")
-        powershellModule\Expand-SpecificFilesFromZip -zipFilePath $imguiZip -destinationPath $imguiRoot -filesTracked $imguiList
+        Write-Host "--------------cleanup glew-------------"
+        Remove-Item $glewZip
     }
 catch
 {

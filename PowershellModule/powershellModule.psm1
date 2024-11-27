@@ -438,7 +438,7 @@ function New-folder {
     return $newFoler
 }
 
-function Test-FilesExistence {
+function Test-FilesMissing {
     param (
         [Parameter(Mandatory=$true)]
         [string]$RootPath,           # Root path to check for files
