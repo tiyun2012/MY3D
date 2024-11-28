@@ -3,7 +3,8 @@ Write-Host "start progress from $PSScriptRoot"
 Set-Location $PSScriptRoot
 # import the module
 $parentFolder = Split-Path -Path $PSScriptRoot -Parent
-$modulePath = Join-Path -Path $parentFolder "PowershellModule\powershellModule.psm1"
+# $modulePath = Join-Path -Path $parentFolder "PowershellModule\powershellModule.psm1"
+$modulePath ="C:\Users\pc\Desktop\Dev\MY3D\Powersell\powershellModule.psm1"
 if (-not(Test-Path $modulePath))
     { 
         Write-Error "Module file not found: $modulePath"
@@ -19,6 +20,7 @@ if (-not(Test-Path $modulePath))
         Write-Error "Failed to import module: $_"
         return
     }
+Get-Command -Module powershellModule
 # Set up logging and error handling
 $logFile =Join-Path $PSScriptRoot "setup.log"
 if ( -not (powershellModule\Test-FileExistence -FilePath $logFile))
@@ -76,11 +78,17 @@ $glewZip=Join-Path $thirdPartyRoot Glewfile.zip
 
 $glewRoot=Join-Path $thirdPartyRoot "glew"
 powershellModule\New-Folder -Name $glewRoot
-powershellModule\Invoke-WebFile -Url $glewUri -DestinationPath $glewZip
+# powershellModule\Invoke-WebFile -Url $glewUri -DestinationPath $glewZip
+$visualStudioPath=powershellModule\Get-MSBuildPath
+# powershellModule\Expand-Zip -ZipFilePath $glewZip -ExtractToPath $glewRoot
+$glewFolder =Join-Path $glewRoot "glew-master"
+Invoke-LibraryBuild  -SourceDir $glewFolder -LibraryName "GLEW"
+# $GlewList = @()
 try
     {
         Write-Host "--------------cleanup glew-------------"
-        Remove-Item $glewZip
+        # powershellModule\Invoke-WebFile -Url $glewUri -DestinationPath $glewZip
+        # Remove-Item $glewZip
     }
 catch
 {
