@@ -3,8 +3,8 @@ Write-Host "start progress from $PSScriptRoot"
 Set-Location $PSScriptRoot
 # import the module
 $parentFolder = Split-Path -Path $PSScriptRoot -Parent
-# $modulePath = Join-Path -Path $parentFolder "PowershellModule\powershellModule.psm1"
-$modulePath ="C:\Users\pc\Desktop\Dev\MY3D\Powersell\powershellModule.psm1"
+$modulePath = Join-Path -Path $parentFolder "PowershellModule\powershellModule.psm1"
+# $modulePath ="C:\Users\pc\Desktop\Dev\MY3D\Powersell\powershellModule.psm1"
 if (-not(Test-Path $modulePath))
     { 
         Write-Error "Module file not found: $modulePath"

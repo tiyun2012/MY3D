@@ -478,3 +478,112 @@ function Test-FilesMissing {
     # Return missing files for further use if needed
     return $missingFiles
 }
+
+function Invoke-LibraryBuild 
+{
+    param (
+        [string]$SourceDir,       # Path to the source directory
+        [string]$LibraryName,     # Name of the library (e.g., GLEW, GLAD)
+        [string]$Generator = "Visual Studio 17 2022", # CMake generator
+        [string]$BuildType = "Release", # Build type (e.g., Debug, Release)
+        [string]$InstallDir = "", # Optional install directory
+        [switch]$BuildSharedLibs  # Flag to build shared libraries
+    )
+    # Validate parameters
+    if (-not (Test-Path $SourceDir)) {
+        throw "Source directory '$SourceDir' does not exist."
+    }
+
+    # Default install directory if not provided
+    if ([string]::IsNullOrWhiteSpace($InstallDir)) {
+        $InstallDir = Join-Path -Path $SourceDir -ChildPath "install"
+    }
+
+    # Define build directory
+    $BuildDir = Join-Path -Path $SourceDir -ChildPath "build"
+
+    # Create build and install directories if they don't exist
+    if (-not (Test-Path $BuildDir)) { 
+        New-Item -ItemType Directory -Path $BuildDir | Out-Null
+    }
+    if (-not (Test-Path $InstallDir)) { 
+        New-Item -ItemType Directory -Path $InstallDir | Out-Null
+    }
+
+    # Navigate to the build directory
+    Push-Location -Path $BuildDir
+
+    try {
+        # Construct the CMake command
+        $sharedLibs = if ($BuildSharedLibs) { "ON" } else { "OFF" }
+        $cmakeCommand = @(
+            "cmake",
+            "-G `"$Generator`"",
+            "-DCMAKE_BUILD_TYPE=$BuildType",
+            "-DCMAKE_INSTALL_PREFIX=`"$InstallDir`"",
+            "-DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON",
+            "-DBUILD_SHARED_LIBS=$sharedLibs",
+            "`"$SourceDir`""
+        ) -join " "
+
+        # Run CMake to generate the build system
+        Write-Host "Running CMake for $LibraryName..."
+        Invoke-Expression $cmakeCommand
+
+        # Build and install the library
+        Write-Host "Building and installing $LibraryName..."
+        Invoke-Expression "cmake --build . --config $BuildType --target install"
+    }
+    finally {
+        # Navigate back to the original directory
+        Pop-Location
+    }
+
+    # Output completion message
+    Write-Host "$LibraryName has been successfully built and installed to $InstallDir."
+}
+<#
+# Example usage for GLEW
+Invoke-LibraryBuild `
+    -SourceDir "C:\Users\pc\Desktop\Dev\MY3D\rbfQuaternion\ThirdParty\glew\glew-master" `
+    -LibraryName "GLEW"
+
+# Example usage for GLAD
+Invoke-LibraryBuild `
+    -SourceDir "C:\Users\pc\Desktop\Dev\MY3D\rbfQuaternion\ThirdParty\glad" `
+    -LibraryName "GLAD" `
+    -BuildSharedLibs
+#>
+
+
+# Export public functions explicitly
+function Set-LibraryBuild{
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$SourceDir      # Path to the source directory
+    )
+    Write-Host "hello"
+}
+
+Export-ModuleMember -Function `
+    Copy-Folders, `
+    Expand-Rar, `
+    Expand-Zip, `
+    Expand-SpecificFilesFromZip, `
+    Invoke-WebFile, `
+    New-PythonVirtualEnvironment, `
+    Reset-Module, `
+    Trace-Info, `
+    Get-PythonVersion, `
+    Install-RequiredPythonModules, `
+    Write-ProgressLog, `
+    Test-StepCompleted, `
+    Test-FileExistence, `
+    Test-FolderExistence, `
+    Test-Uri, `
+    Test-Dependencies, `
+    Get-MSBuildPath, `
+    New-folder, `
+    Test-FilesMissing, `
+    Invoke-LibraryBuild
