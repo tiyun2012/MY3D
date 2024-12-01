@@ -70,6 +70,35 @@ else {
     Write-Host "-------------imgui is available------------------------" -ForegroundColor Yellow
 }
 
+# Glad
+Write-Host "--- Checking  Glad:: -----" -ForegroundColor Yellow
+$gladUri = "https://github.com/Dav1dde/glad/archive/refs/heads/master.zip"
+$gladZip=Join-Path $thirdPartyRoot Gladfile.zip
+
+$gladRoot=Join-Path $thirdPartyRoot "glad"
+powershellModule\New-Folder -Name $gladRoot
+powershellModule\Invoke-WebFile -Url $gladUri -DestinationPath $gladZip
+$visualStudioPath=powershellModule\Get-MSBuildPath
+powershellModule\Expand-Zip -ZipFilePath $gladZip -ExtractToPath $gladRoot
+$gladFolder =Join-Path $gladRoot "glad-master"
+$cmakeListDir =$gladFolder #Join-Path $glewFolder "build\cmake"
+powershellModule\Invoke-LibraryBuild `
+    -SourceDir $gladFolder `
+    -CMakeListsDir $cmakeListDir `
+    -LibraryName "GLAD"
+# $GlewList = @()
+try
+    {
+        Write-Host "--------------cleanup glad-------------"
+        # powershellModule\Invoke-WebFile -Url $glewUri -DestinationPath $glewZip
+        Remove-Item $gladZip
+    }
+catch
+{
+    Write-Error "Failed to download: $_"
+    return
+}
+Copy-Folders -SourceFolders @()
 
 # Glew
 Write-Host "--- Checking  Glew:: -----" -ForegroundColor Yellow
@@ -78,17 +107,21 @@ $glewZip=Join-Path $thirdPartyRoot Glewfile.zip
 
 $glewRoot=Join-Path $thirdPartyRoot "glew"
 powershellModule\New-Folder -Name $glewRoot
-# powershellModule\Invoke-WebFile -Url $glewUri -DestinationPath $glewZip
-$visualStudioPath=powershellModule\Get-MSBuildPath
-# powershellModule\Expand-Zip -ZipFilePath $glewZip -ExtractToPath $glewRoot
+powershellModule\Invoke-WebFile -Url $glewUri -DestinationPath $glewZip
+# $visualStudioPath=powershellModule\Get-MSBuildPath
+powershellModule\Expand-Zip -ZipFilePath $glewZip -ExtractToPath $glewRoot
 $glewFolder =Join-Path $glewRoot "glew-master"
-Invoke-LibraryBuild  -SourceDir $glewFolder -LibraryName "GLEW"
+$cmakeListDir = Join-Path $glewFolder "build\cmake"
+powershellModule\Invoke-LibraryBuild `
+    -SourceDir $glewFolder `
+    -CMakeListsDir $cmakeListDir `
+    -LibraryName "GLEW"
 # $GlewList = @()
 try
     {
         Write-Host "--------------cleanup glew-------------"
         # powershellModule\Invoke-WebFile -Url $glewUri -DestinationPath $glewZip
-        # Remove-Item $glewZip
+        Remove-Item $glewZip
     }
 catch
 {

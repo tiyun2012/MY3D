@@ -479,38 +479,37 @@ function Test-FilesMissing {
     return $missingFiles
 }
 
-function Invoke-LibraryBuild 
-{
+function Invoke-LibraryBuild {
     param (
-        [string]$SourceDir,       # Path to the source directory
+        [string]$SourceDir,       # Path to the library's root directory
         [string]$LibraryName,     # Name of the library (e.g., GLEW, GLAD)
         [string]$Generator = "Visual Studio 17 2022", # CMake generator
         [string]$BuildType = "Release", # Build type (e.g., Debug, Release)
         [string]$InstallDir = "", # Optional install directory
-        [switch]$BuildSharedLibs  # Flag to build shared libraries
+        [switch]$BuildSharedLibs, # Flag to build shared libraries
+        [string]$CMakeListsDir = $null # Path to the directory containing CMakeLists.txt (optional)
     )
-    # Validate parameters
+
+    # Validate SourceDir
     if (-not (Test-Path $SourceDir)) {
-        throw "Source directory '$SourceDir' does not exist."
+        Write-Error "Source directory does not exist: $SourceDir"
+        return $false
     }
 
-    # Default install directory if not provided
-    if ([string]::IsNullOrWhiteSpace($InstallDir)) {
-        $InstallDir = Join-Path -Path $SourceDir -ChildPath "install"
+    # Determine CMakeLists.txt location
+    if ([string]::IsNullOrWhiteSpace($CMakeListsDir)) {
+        $CMakeListsDir = $SourceDir  # Default to root if not specified
+        return $false
     }
 
-    # Define build directory
+    # Define BuildDir
     $BuildDir = Join-Path -Path $SourceDir -ChildPath "build"
 
-    # Create build and install directories if they don't exist
-    if (-not (Test-Path $BuildDir)) { 
+    # Ensure BuildDir exists
+    if (-not (Test-Path $BuildDir)) {
         New-Item -ItemType Directory -Path $BuildDir | Out-Null
     }
-    if (-not (Test-Path $InstallDir)) { 
-        New-Item -ItemType Directory -Path $InstallDir | Out-Null
-    }
 
-    # Navigate to the build directory
     Push-Location -Path $BuildDir
 
     try {
@@ -523,37 +522,35 @@ function Invoke-LibraryBuild
             "-DCMAKE_INSTALL_PREFIX=`"$InstallDir`"",
             "-DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON",
             "-DBUILD_SHARED_LIBS=$sharedLibs",
-            "`"$SourceDir`""
+            "`"$CMakeListsDir`""
         ) -join " "
 
-        # Run CMake to generate the build system
-        Write-Host "Running CMake for $LibraryName..."
+        Write-Host "Running CMake command: $cmakeCommand"
         Invoke-Expression $cmakeCommand
 
-        # Build and install the library
+        # Build and install
         Write-Host "Building and installing $LibraryName..."
-        Invoke-Expression "cmake --build . --config $BuildType --target install"
+        $buildCommand = "cmake --build . --config $BuildType "
+        Write-Host "Running build command: $buildCommand"
+        Invoke-Expression $buildCommand
+    }
+    catch {
+        Write-Error "Failed to build ${LibraryName}: $_"
+        return $false
     }
     finally {
-        # Navigate back to the original directory
         Pop-Location
     }
 
-    # Output completion message
-    Write-Host "$LibraryName has been successfully built and installed to $InstallDir."
-}
-<#
-# Example usage for GLEW
-Invoke-LibraryBuild `
-    -SourceDir "C:\Users\pc\Desktop\Dev\MY3D\rbfQuaternion\ThirdParty\glew\glew-master" `
-    -LibraryName "GLEW"
+    # Validate installation
+    if (-not (Test-Path $InstallDir)) {
+        Write-Error "Install directory is empty or does not exist: $InstallDir"
+        return $false
+    }
 
-# Example usage for GLAD
-Invoke-LibraryBuild `
-    -SourceDir "C:\Users\pc\Desktop\Dev\MY3D\rbfQuaternion\ThirdParty\glad" `
-    -LibraryName "GLAD" `
-    -BuildSharedLibs
-#>
+    Write-Host "$LibraryName has been successfully built and installed to $InstallDir."
+    return $true
+}
 
 
 # Export public functions explicitly
