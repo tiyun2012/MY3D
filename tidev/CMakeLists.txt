@@ -1,63 +1,79 @@
-# Minimum CMake version
 cmake_minimum_required(VERSION 3.15)
-
-# Project name and language
-project(MyProject VERSION 1.0 LANGUAGES CXX)
+set(PROJECT_NAME GLRBF)
+# Project name and settings
+project(${PROJECT_NAME} LANGUAGES CXX)
 
 # Set the C++ standard
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Set the vcpkg installation root
-set(VCPKG_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg")
-set(VCPKG_TARGET_TRIPLET "x64-windows-static")
-
-# Include directories for GLAD
-set(GLAD_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/glad/include")
-set(GLAD_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/glad/src/glad.c")
-
-# Include GLAD headers
-include_directories(${GLAD_INCLUDE_DIR})
-
-# Include directories for GLFW
-set(GLFW_INCLUDE_DIR "${VCPKG_ROOT}/installed/${VCPKG_TARGET_TRIPLET}/include")
-include_directories(${GLFW_INCLUDE_DIR})
-
-# Find OpenGL
-find_package(OpenGL REQUIRED)
-
-# Add the executable and include the GLAD source file
-add_executable(${PROJECT_NAME}
-    src/main.cpp    # Your main application source file
-    ${GLAD_SOURCE}  # GLAD source file
-)
+# Configurations
+set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Build configurations" FORCE)
 
 # Include directories
-target_include_directories(${PROJECT_NAME} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src     # Your source directory
-    ${GLAD_INCLUDE_DIR}                 # GLAD include directory
-    ${GLFW_INCLUDE_DIR}                 # GLFW include directory
+include_directories(
+    ${CMAKE_SOURCE_DIR}/../ThirdParty/glfw-3.4/include
+    ${CMAKE_SOURCE_DIR}/../ThirdParty/imgui
+    ${CMAKE_SOURCE_DIR}/../ThirdParty/imgui/backends
+    ${CMAKE_SOURCE_DIR}/../ThirdParty/gladLib/include
+    ${CMAKE_SOURCE_DIR}/../glm-master
+    ${CMAKE_SOURCE_DIR}/../eigen-master
 )
 
-# Link libraries
-target_link_libraries(${PROJECT_NAME} PRIVATE
-    "${VCPKG_ROOT}/installed/${VCPKG_TARGET_TRIPLET}/lib/glfw3.lib"  # GLFW library
-    OpenGL::GL                                                       # OpenGL library
+# Source files
+set(SOURCES
+    ../ThirdParty/gladLib/src/glad.c
+    ../ThirdParty/imgui/backends/imgui_impl_glfw.cpp
+    ../ThirdParty/imgui/backends/imgui_impl_opengl3.cpp
+    ../ThirdParty/imgui/imgui.cpp
+    ../ThirdParty/imgui/imgui_demo.cpp
+    ../ThirdParty/imgui/imgui_draw.cpp
+    ../ThirdParty/imgui/imgui_tables.cpp
+    ../ThirdParty/imgui/imgui_widgets.cpp
+    main.cpp
 )
 
-# For Windows-specific libraries (optional)
-if (WIN32)
-    target_link_libraries(${PROJECT_NAME} PRIVATE
-        opengl32.lib                    # OpenGL library on Windows
-        gdi32                           # Windows Graphics Device Interface
-        user32                          # Windows User API
-    )
+# Header files
+set(HEADERS
+    ../ThirdParty/imgui/backends/imgui_impl_glfw.h
+    ../ThirdParty/imgui/backends/imgui_impl_opengl3.h
+    ../ThirdParty/imgui/backends/imgui_impl_opengl3_loader.h
+    ../ThirdParty/imgui/imconfig.h
+    ../ThirdParty/imgui/imgui.h
+    ../ThirdParty/imgui/imgui_internal.h
+    ../ThirdParty/imgui/imstb_rectpack.h
+    ../ThirdParty/imgui/imstb_textedit.h
+    ../ThirdParty/imgui/imstb_truetype.h
+)
+
+# Add the executable
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+
+# Platform-specific settings
+if(WIN32)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE _CONSOLE)
 endif()
 
-# Set the output directory for the executable
+# Linker settings for Debug
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/Debug
 )
+target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:_DEBUG>)
+target_compile_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:/W3 /SDL>)
+target_link_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:/DEBUG>)
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw3 opengl32)
 
-# Configure VSCode IntelliSense with the CMake Tools extension
-# No need for compile_commands.json when using the Visual Studio generator
+# Linker settings for Release
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/Release
+)
+target_compile_definitions(${PROJECT_NAME} PRIVATE $<$<CONFIG:Release>:NDEBUG>)
+target_compile_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Release>:/W3 /SDL /O2>)
+target_link_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Release>:/OPT:REF /OPT:ICF>)
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw3 opengl32)
+
+# Additional library paths
+target_link_directories(${PROJECT_NAME} PRIVATE
+    ../ThirdParty/gladLib/src
+    ../ThirdParty/glfw-3.4/lib-vc2022
+)

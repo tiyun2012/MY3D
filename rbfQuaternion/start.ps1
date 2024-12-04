@@ -86,7 +86,6 @@ powershellModule\Invoke-LibraryBuild `
     -SourceDir $gladFolder `
     -CMakeListsDir $cmakeListDir `
     -LibraryName "GLAD"
-# $GlewList = @()
 try
     {
         Write-Host "--------------cleanup glad-------------"
@@ -98,7 +97,12 @@ catch
     Write-Error "Failed to download: $_"
     return
 }
-Copy-Folders -SourceFolders @()
+$GladList = @(
+    (Join-Path $gladFolder "build/src"),
+    (Join-Path $gladFolder "Release"),
+    (Join-Path $gladFolder "include")
+)
+Copy-Folders $GladList $gladRoot
 
 # Glew
 Write-Host "--- Checking  Glew:: -----" -ForegroundColor Yellow

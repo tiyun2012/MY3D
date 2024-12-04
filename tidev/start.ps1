@@ -100,7 +100,12 @@ catch
     Write-Error "Failed to download: $_"
     return
 }
-Copy-Folders  @("${gladFolder}\build\include","${gladFolder}\build\Release","${gladFolder}\build\src") $gladRoot
+$sourceFolders = @("${gladFolder}\build\include", "${gladFolder}\build\Release", "${gladFolder}\build\src")
+$destination = $gladRoot
+
+foreach ($folder in $sourceFolders) {
+    Copy-Item -Path $folder -Destination $destination -Recurse
+}
 
 
 
