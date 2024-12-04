@@ -2,23 +2,18 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 function Copy-Folders {
     param (
-        [string]$SourcePath,
-        [string]$DestinationPath,
-        [string[]]$FoldersToCopy
+        [string[]]$Folders,
+        [string]$DestinationPath
     )
 
-    foreach ($folder in $FoldersToCopy) {
-        $sourceFolderPath = Join-Path -Path $SourcePath -ChildPath $folder
-        $destinationFolderPath = Join-Path -Path $DestinationPath -ChildPath $folder
+    foreach ($folder in $Folders) {
+        # $sourceFolderPath = Join-Path -Path $SourcePath -ChildPath $folder
+        # $destinationFolderPath = Join-Path -Path $DestinationPath -ChildPath $folder
 
-        if (-not (Test-Path -Path $sourceFolderPath -PathType Container)) {
-            Write-Error "Source folder '$sourceFolderPath' does not exist."
-            return $false
-        }
 
-        Write-Output "Copying $sourceFolderPath to $destinationFolderPath"
+        Write-Output "Copying $folder to $DestinationPath"
         try {
-            Copy-Item -Path $sourceFolderPath -Destination $destinationFolderPath -Recurse -Force
+            Copy-Item -Path $sourceFolderPath -Destination $DestinationPath -Recurse -Force
             Write-Output "Copied $folder successfully."
         } catch {
             Write-Error "Failed to copy folder '$folder': $_"
@@ -548,7 +543,6 @@ function Invoke-LibraryBuild {
         return $false
     }
 
-    Write-Host "$LibraryName has been successfully built and installed to $InstallDir."
     return $true
 }
 
