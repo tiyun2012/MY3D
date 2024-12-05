@@ -118,6 +118,63 @@ else {
 }
 
 
+# glfw https://github.com/glfw/glfw.git
+$glfwRoot=Join-Path $thirdPartyRoot "glfw"
+$glfwFolder =Join-Path $gladRoot "glfw-master"
+
+
+Write-Host "--- Checking  Glad:: -----" -ForegroundColor Yellow
+$glfwUri = "https://github.com/glfw/glfw/archive/refs/heads/master.zip"
+$glfwZip=Join-Path $thirdPartyRoot glfwfile.zip
+
+powershellModule\New-Folder -Name $glfwRoot
+powershellModule\Invoke-WebFile -Url $glfwUri -DestinationPath $glfwZip
+powershellModule\Expand-Zip -ZipFilePath $glfwZip -ExtractToPath $glfwRoot
+$GladList=@("include\glad\glad.h","include\KHR\khrplatform.h","Release\glad.lib","src\glad.c")
+if(powershellModule\Test-FilesMissing -RootPath $gladRoot -FileList $GladList)
+{
+
+    
+    Write-Host "--- Checking  Glad:: -----" -ForegroundColor Yellow
+    $gladUri = "https://github.com/Dav1dde/glad/archive/refs/heads/master.zip"
+    $gladZip=Join-Path $thirdPartyRoot Gladfile.zip
+    
+    powershellModule\New-Folder -Name $gladRoot
+    powershellModule\Invoke-WebFile -Url $gladUri -DestinationPath $gladZip
+    powershellModule\Expand-Zip -ZipFilePath $gladZip -ExtractToPath $gladRoot
+    $cmakeListDir =$gladFolder #Join-Path $glewFolder "build\cmake"
+    powershellModule\Invoke-LibraryBuild `
+        -SourceDir $gladFolder `
+        -CMakeListsDir $cmakeListDir `
+        -LibraryName "GLAD"
+    
+    Write-Host "--------------copying glad-------------"
+    # Copy all files from glad's build folder to the destination folder.
+    $sourceFolders = @("${gladFolder}\build\include", "${gladFolder}\build\Release", "${gladFolder}\build\src")
+    $destination = $gladRoot
+    
+    foreach ($folder in $sourceFolders) {
+        Copy-Item -Path $folder -Destination $destination -Recurse
+    }
+    try
+        {
+            Write-Host "--------------cleanup glad-------------"
+            Remove-Item $gladZip
+            Remove-Item $gladFolder
+        }
+    catch
+    {
+        Write-Error "cleanum face issues : $_"
+        return
+    }
+
+}
+else {
+    <# Action when all if and elseif conditions are false #>
+    Write-Host "glad is available" -ForegroundColor Yellow
+}
+
+
 
 
 
