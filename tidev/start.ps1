@@ -74,39 +74,48 @@ else {
 $gladRoot=Join-Path $thirdPartyRoot "glad"
 $gladFolder =Join-Path $gladRoot "glad-master"
 $GladList=@("include\glad\glad.h","include\KHR\khrplatform.h","Release\glad.lib","src\glad.c")
-powershellModule\Test-FilesMissing -RootPath $gladRoot -FileList $GladList
-Write-Host "--- Checking  Glad:: -----" -ForegroundColor Yellow
-$gladUri = "https://github.com/Dav1dde/glad/archive/refs/heads/master.zip"
-$gladZip=Join-Path $thirdPartyRoot Gladfile.zip
-
-powershellModule\New-Folder -Name $gladRoot
-powershellModule\Invoke-WebFile -Url $gladUri -DestinationPath $gladZip
-$visualStudioPath=powershellModule\Get-MSBuildPath
-powershellModule\Expand-Zip -ZipFilePath $gladZip -ExtractToPath $gladRoot
-$cmakeListDir =$gladFolder #Join-Path $glewFolder "build\cmake"
-powershellModule\Invoke-LibraryBuild `
-    -SourceDir $gladFolder `
-    -CMakeListsDir $cmakeListDir `
-    -LibraryName "GLAD"
-# $GlewList = @()
-try
-    {
-        Write-Host "--------------cleanup glad-------------"
-        # powershellModule\Invoke-WebFile -Url $glewUri -DestinationPath $glewZip
-        Remove-Item $gladZip
-    }
-catch
+if(powershellModule\Test-FilesMissing -RootPath $gladRoot -FileList $GladList)
 {
-    Write-Error "Failed to download: $_"
-    return
-}
-$sourceFolders = @("${gladFolder}\build\include", "${gladFolder}\build\Release", "${gladFolder}\build\src")
-$destination = $gladRoot
 
-foreach ($folder in $sourceFolders) {
-    Copy-Item -Path $folder -Destination $destination -Recurse
-}
+    
+    Write-Host "--- Checking  Glad:: -----" -ForegroundColor Yellow
+    $gladUri = "https://github.com/Dav1dde/glad/archive/refs/heads/master.zip"
+    $gladZip=Join-Path $thirdPartyRoot Gladfile.zip
+    
+    powershellModule\New-Folder -Name $gladRoot
+    powershellModule\Invoke-WebFile -Url $gladUri -DestinationPath $gladZip
+    powershellModule\Expand-Zip -ZipFilePath $gladZip -ExtractToPath $gladRoot
+    $cmakeListDir =$gladFolder #Join-Path $glewFolder "build\cmake"
+    powershellModule\Invoke-LibraryBuild `
+        -SourceDir $gladFolder `
+        -CMakeListsDir $cmakeListDir `
+        -LibraryName "GLAD"
+    
+    Write-Host "--------------copying glad-------------"
+    # Copy all files from glad's build folder to the destination folder.
+    $sourceFolders = @("${gladFolder}\build\include", "${gladFolder}\build\Release", "${gladFolder}\build\src")
+    $destination = $gladRoot
+    
+    foreach ($folder in $sourceFolders) {
+        Copy-Item -Path $folder -Destination $destination -Recurse
+    }
+    try
+        {
+            Write-Host "--------------cleanup glad-------------"
+            Remove-Item $gladZip
+            Remove-Item $gladFolder
+        }
+    catch
+    {
+        Write-Error "cleanum face issues : $_"
+        return
+    }
 
+}
+else {
+    <# Action when all if and elseif conditions are false #>
+    Write-Host "glad is available" -ForegroundColor Yellow
+}
 
 
 
