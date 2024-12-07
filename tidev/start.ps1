@@ -41,8 +41,8 @@ $imguiUri = "https://github.com/ocornut/imgui/archive/refs/heads/master.zip"
 $imguiZip=Join-Path $thirdPartyRoot imguifile.zip
 # $imguiZip="${PSScriptRoot}\${thirdPartyRoot}"
 
-$imguiRoot=Join-Path $thirdPartyRoot "Imgui"
-powershellModule\New-Folder -Name $imguiRoot
+$imguiRoot=Join-Path $thirdPartyRoot "imgui-master"
+# powershellModule\New-Folder -Name $imguiRoot
 $imguiList = @("imgui_widgets.cpp","imgui_demo.cpp","imgui_draw.cpp","imgui.h",
                         "imgui.cpp","imstb_truetype.h",
                         "imgui_tables.cpp","imgui_internal.h","imconfig.h","imstb_rectpack.h","imstb_textedit.h",
@@ -56,8 +56,9 @@ if ((powershellModule\Test-FilesMissing -RootPath $imguiRoot -FileList $imguiLis
             
                         # dowload and copy files
                 powershellModule\Invoke-WebFile -Url $imguiUri -DestinationPath $imguiZip
-                powershellModule\Expand-SpecificFilesFromZip -zipFilePath $imguiZip -destinationPath $imguiRoot -filesTracked $imguiList
-                Remove-Item $imguiZip
+                # powershellModule\Expand-SpecificFilesFromZip -zipFilePath $imguiZip -destinationPath $imguiRoot -filesTracked $imguiList
+                # Remove-Item $imguiZip
+                powershellModule\Expand-Zip -ZipFilePath $imguiZip -ExtractToPath $thirdPartyRoot
         }
                 
     catch
@@ -71,45 +72,43 @@ else {
 }
 
 # Glad
-$gladRoot=Join-Path $thirdPartyRoot "glad"
-$gladFolder =Join-Path $gladRoot "glad-master"
-$GladList=@("include\glad\glad.h","include\KHR\khrplatform.h","Release\glad.lib","src\glad.c")
-if(powershellModule\Test-FilesMissing -RootPath $gladRoot -FileList $GladList)
-{
-
-    
+# $gladRoot=Join-Path $thirdPartyRoot "glad"
+$gladFolder =Join-Path $thirdPartyRoot "glad-master"
+$GladList=@("glad-master\build\include\glad\glad.h","glad-master\build\include\KHR\khrplatform.h","glad-master\build\Release\glad.lib","glad-master\build\src\glad.c")
+if(powershellModule\Test-FilesMissing -RootPath $thirdPartyRoot -FileList $GladList)
+{  
     Write-Host "--- Checking  Glad:: -----" -ForegroundColor Yellow
     $gladUri = "https://github.com/Dav1dde/glad/archive/refs/heads/master.zip"
     $gladZip=Join-Path $thirdPartyRoot Gladfile.zip
     
-    powershellModule\New-Folder -Name $gladRoot
+    # powershellModule\New-Folder -Name $gladRoot
     powershellModule\Invoke-WebFile -Url $gladUri -DestinationPath $gladZip
-    powershellModule\Expand-Zip -ZipFilePath $gladZip -ExtractToPath $gladRoot
-    $cmakeListDir =$gladFolder #Join-Path $glewFolder "build\cmake"
+    powershellModule\Expand-Zip -ZipFilePath $gladZip -ExtractToPath $thirdPartyRoot
+    # $cmakeListDir =$gladFolder #Join-Path $glewFolder "build\cmake"
     powershellModule\Invoke-LibraryBuild `
         -SourceDir $gladFolder `
-        -CMakeListsDir $cmakeListDir `
+        -CMakeListsDir $gladFolder `
         -LibraryName "GLAD"
     
-    Write-Host "--------------copying glad-------------"
-    # Copy all files from glad's build folder to the destination folder.
-    $sourceFolders = @("${gladFolder}\build\include", "${gladFolder}\build\Release", "${gladFolder}\build\src")
-    $destination = $gladRoot
+    # Write-Host "--------------copying glad-------------"
+    # # Copy all files from glad's build folder to the destination folder.
+    # $sourceFolders = @("${gladFolder}\build\include", "${gladFolder}\build\Release", "${gladFolder}\build\src")
+    # $destination = $gladRoot
     
-    foreach ($folder in $sourceFolders) {
-        Copy-Item -Path $folder -Destination $destination -Recurse
-    }
-    try
-        {
-            Write-Host "--------------cleanup glad-------------"
-            Remove-Item $gladZip
-            Remove-Item $gladFolder
-        }
-    catch
-    {
-        Write-Error "cleanum face issues : $_"
-        return
-    }
+    # foreach ($folder in $sourceFolders) {
+    #     Copy-Item -Path $folder -Destination $destination -Recurse
+    # }
+    # try
+    #     {
+    #         Write-Host "--------------cleanup glad-------------"
+    #         Remove-Item $gladZip
+    #         # Remove-Item $gladFolder
+    #     }
+    # catch
+    # {
+    #     Write-Error "cleanum face issues : $_"
+    #     return
+    # }
 
 }
 else {
@@ -118,55 +117,25 @@ else {
 }
 
 
-# glfw https://github.com/glfw/glfw.git
-$glfwRoot=Join-Path $thirdPartyRoot "glfw"
-$glfwFolder =Join-Path $gladRoot "glfw-master"
+# glfw https://github.com/glfw/glfw/archive/refs/heads/master.zip
+# $glfwRoot=Join-Path $thirdPartyRoot "glfw"
+$glfwFolder =Join-Path $thirdPartyRoot "glfw-master"
 
 
-Write-Host "--- Checking  Glad:: -----" -ForegroundColor Yellow
-$glfwUri = "https://github.com/glfw/glfw/archive/refs/heads/master.zip"
-$glfwZip=Join-Path $thirdPartyRoot glfwfile.zip
-
-powershellModule\New-Folder -Name $glfwRoot
-powershellModule\Invoke-WebFile -Url $glfwUri -DestinationPath $glfwZip
-powershellModule\Expand-Zip -ZipFilePath $glfwZip -ExtractToPath $glfwRoot
-$GladList=@("include\glad\glad.h","include\KHR\khrplatform.h","Release\glad.lib","src\glad.c")
-if(powershellModule\Test-FilesMissing -RootPath $gladRoot -FileList $GladList)
+Write-Host "--- Checking  Glfw:: -----" -ForegroundColor Yellow
+$GlfwList=@("glfw-master\build\src\Release\glfw3.lib","glfw-master\include\GLFW\glfw3.h","glfw-master\include\GLFW\glfw3native.h")
+if(powershellModule\Test-FilesMissing -RootPath $thirdPartyRoot -FileList $GlfwList)
 {
-
+    $glfwUri = "https://github.com/glfw/glfw/archive/refs/heads/master.zip"
+    $glfwZip=Join-Path $thirdPartyRoot glfwfile.zip
     
-    Write-Host "--- Checking  Glad:: -----" -ForegroundColor Yellow
-    $gladUri = "https://github.com/Dav1dde/glad/archive/refs/heads/master.zip"
-    $gladZip=Join-Path $thirdPartyRoot Gladfile.zip
-    
-    powershellModule\New-Folder -Name $gladRoot
-    powershellModule\Invoke-WebFile -Url $gladUri -DestinationPath $gladZip
-    powershellModule\Expand-Zip -ZipFilePath $gladZip -ExtractToPath $gladRoot
-    $cmakeListDir =$gladFolder #Join-Path $glewFolder "build\cmake"
+    # powershellModule\New-Folder -Name $glfwRoot
+    powershellModule\Invoke-WebFile -Url $glfwUri -DestinationPath $glfwZip
+    powershellModule\Expand-Zip -ZipFilePath $glfwZip -ExtractToPath $thirdPartyRoot
     powershellModule\Invoke-LibraryBuild `
-        -SourceDir $gladFolder `
-        -CMakeListsDir $cmakeListDir `
-        -LibraryName "GLAD"
-    
-    Write-Host "--------------copying glad-------------"
-    # Copy all files from glad's build folder to the destination folder.
-    $sourceFolders = @("${gladFolder}\build\include", "${gladFolder}\build\Release", "${gladFolder}\build\src")
-    $destination = $gladRoot
-    
-    foreach ($folder in $sourceFolders) {
-        Copy-Item -Path $folder -Destination $destination -Recurse
-    }
-    try
-        {
-            Write-Host "--------------cleanup glad-------------"
-            Remove-Item $gladZip
-            Remove-Item $gladFolder
-        }
-    catch
-    {
-        Write-Error "cleanum face issues : $_"
-        return
-    }
+            -SourceDir $glfwFolder `
+            -CMakeListsDir $glfwFolder `
+            -LibraryName "glfw"
 
 }
 else {
