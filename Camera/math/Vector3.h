@@ -16,7 +16,7 @@ public:
 	Vector3();
 	//making vector object from given value
 	Vector3(float xi, float yi, float zi);
-
+	// Arithmetic operators
 	Vector3 operator+(const Vector3& v) const;
 
 	Vector3 operator-(const Vector3& v) const;
@@ -28,7 +28,8 @@ public:
 	Vector3 operator/(float s) const;
 
 	Vector3 operator-() const;
-
+	// compound assigment operators
+	Vector3& operator+=(const Vector3&v);
 	float length() const;
 
 	Vector3 normalized() const;
@@ -39,7 +40,10 @@ public:
 
 };
 
-
+// Non-member operator overload to allow scalar multiplication from the left
+inline Vector3 operator*(float s, const Vector3& v) {
+    return Vector3(v.x * s, v.y * s, v.z * s);
+}
 
 
 #endif//VECTOR3_H

@@ -1,10 +1,10 @@
 // Define a 3D vector class
 #include"Vector3.h"
 
-
+// Constructors
 Vector3::Vector3() : x(0), y(0), z(0) {};
-    Vector3::Vector3(float xi, float yi, float zi) : x(xi), y(yi), z(zi) {}
-
+Vector3::Vector3(float xi, float yi, float zi) : x(xi), y(yi), z(zi) {}
+// ++++++++ ARITHMETIC OPERATORS ++++++++
     // Vector addition, not change argument and object
  Vector3 Vector3::operator+(const Vector3 & v) const {
         return Vector3(x + v.x, y + v.y, z + v.z);
@@ -33,6 +33,11 @@ Vector3 Vector3::operator/(float s) const {
 // Unary minus operator
 Vector3 Vector3::operator-() const {
     return Vector3(-x, -y, -z);
+}
+// compound assignment operators
+Vector3 &Vector3::operator+=(const Vector3 &v)
+{
+    return *this = *this + v;
 }
 
 // Vector length

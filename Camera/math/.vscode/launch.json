@@ -5,7 +5,7 @@
         "name": "C++ Debug",
         "type": "cppdbg",
         "request": "launch",
-        "program": "${workspaceFolder}/main.exe",
+        "program": "${workspaceFolder}/mathTest.exe",
         "args": [],
         "stopAtEntry": false,
         "cwd": "${workspaceFolder}",
