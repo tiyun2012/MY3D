@@ -30,13 +30,23 @@ public:
 	Vector3 operator-() const;
 	// compound assigment operators
 	Vector3& operator+=(const Vector3&v);
+	Vector3& operator-=(const Vector3&v);
+	Vector3& operator*=(float s);
+	Vector3& operator/=(float s);
 	float length() const;
-
+	float lengthSquared() const;
+	//
 	Vector3 normalized() const;
 
 	Vector3 cross(const Vector3& v) const;
 
 	float dot(const Vector3& v) const;
+	float angleBetween(const Vector3& v) const;
+	Vector3 projectOnto(const Vector3& v) const;
+	// Comparison operators
+	bool isZero() const;
+	bool operator==(const Vector3& v)const;
+	bool operator!=(const Vector3& v)const;
 
 };
 

@@ -40,18 +40,35 @@ Vector3 &Vector3::operator+=(const Vector3 &v)
     return *this = *this + v;
 }
 
+Vector3 &Vector3::operator-=(const Vector3 &v)
+{
+    return *this = *this - v;
+}
+
+Vector3 &Vector3::operator*=(float s)
+{
+    return *this = *this * s;
+}
+
+Vector3 &Vector3::operator/=(float s)
+{
+    return *this = *this / s;
+}
+
 // Vector length
 float Vector3::length() const {
     return sqrtf(x * x + y * y + z * z);
 }
 
+float Vector3::lengthSquared() const
+{
+    return x * x + y * y + z * z;
+}
+
 // Normalize vector
 Vector3 Vector3::normalized() const {
     float len = length();
-    if (len > 0)
-        return (*this) / len;
-    else
-        return Vector3(0, 0, 0);
+    return (len>0)?*this/len:Vector3(0,0,0);
 }
 
 // Cross product
@@ -67,4 +84,36 @@ Vector3 Vector3::cross(const Vector3& v) const {
 // Dot product
 float Vector3::dot(const Vector3& v) const {
     return x * v.x + y * v.y + z * v.z;
+}
+
+float Vector3::angleBetween(const Vector3 &v) const
+{
+    float len1=this->length();
+    float len2=v.length();
+    if(len1==0 || len2==0)
+        return 0;
+    return acosf((*this*v)/(len1*len2));
+}
+
+Vector3 Vector3::projectOnto(const Vector3 &v) const
+{
+    float secondVectorLength = v.length();
+    if(secondVectorLength == 0)
+        return Vector3(0, 0, 0);
+    return ((*this * v) / secondVectorLength)*v.normalized();
+}
+
+bool Vector3::isZero() const
+{
+    return (x == 0 && y == 0 && z == 0);
+}
+
+bool Vector3::operator==(const Vector3 &v) const
+{
+    return (x == v.x && y == v.y && z == v.z);
+}
+
+bool Vector3::operator!=(const Vector3 &v) const
+{
+    return (x!=v.x || y!=v.y || z!=v.z);
 }
