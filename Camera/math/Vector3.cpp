@@ -103,6 +103,15 @@ Vector3 Vector3::projectOnto(const Vector3 &v) const
     return ((*this * v) / secondVectorLength)*v.normalized();
 }
 
+Vector3 Vector3::reflectOver(const Vector3 &v) const
+{
+    if(v!=Vector3())
+    {
+        return 2 * this->projectOnto(v)-*this;
+    }
+    return Vector3();
+}
+
 bool Vector3::isZero() const
 {
     return (x == 0 && y == 0 && z == 0);
@@ -116,4 +125,9 @@ bool Vector3::operator==(const Vector3 &v) const
 bool Vector3::operator!=(const Vector3 &v) const
 {
     return (x!=v.x || y!=v.y || z!=v.z);
+}
+
+Vector3 Vector3::lerp(const Vector3 &v1, const Vector3 &v2,float t) 
+{
+    return Vector3(v1.x+t*(v2.x-v1.x),v1.y+t*(v2.y-v1.y),v1.z+t*(v2.z-v1.z));
 }

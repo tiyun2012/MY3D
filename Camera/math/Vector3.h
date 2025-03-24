@@ -43,10 +43,14 @@ public:
 	float dot(const Vector3& v) const;
 	float angleBetween(const Vector3& v) const;
 	Vector3 projectOnto(const Vector3& v) const;
+	Vector3 reflectOver(const Vector3& normal) const;
 	// Comparison operators
 	bool isZero() const;
 	bool operator==(const Vector3& v)const;
 	bool operator!=(const Vector3& v)const;
+
+	// Static methods (utility methods)
+	static Vector3 lerp(const Vector3&v1,const Vector3&v2,float t);
 
 };
 
