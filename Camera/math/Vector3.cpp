@@ -4,6 +4,7 @@
 // Constructors
 Vector3::Vector3() : x(0), y(0), z(0) {};
 Vector3::Vector3(float xi, float yi, float zi) : x(xi), y(yi), z(zi) {}
+
 // ++++++++ ARITHMETIC OPERATORS ++++++++
     // Vector addition, not change argument and object
  Vector3 Vector3::operator+(const Vector3 & v) const {
@@ -130,4 +131,10 @@ bool Vector3::operator!=(const Vector3 &v) const
 Vector3 Vector3::lerp(const Vector3 &v1, const Vector3 &v2,float t) 
 {
     return Vector3(v1.x+t*(v2.x-v1.x),v1.y+t*(v2.y-v1.y),v1.z+t*(v2.z-v1.z));
+}
+
+std::ostream &operator<<(std::ostream &os, const Vector3 &v)
+{
+    os<<"(" << v.x << ", " << v.y << ", " << v.z<<")";
+    return os;
 }

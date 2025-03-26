@@ -10,7 +10,13 @@
 #endif
 class Vector3 {
 public:
+	// Data members
 	float x, y, z;
+	// static constants
+	 static const Vector3 zero; 
+	 static const Vector3 unitX;
+	 static const Vector3 unitY;
+	 static const Vector3 unitZ;
 	// constructor
 	//making a vector object default
 	Vector3();
@@ -51,6 +57,7 @@ public:
 
 	// Static methods (utility methods)
 	static Vector3 lerp(const Vector3&v1,const Vector3&v2,float t);
+	friend std::ostream& operator<<(std::ostream& os, const Vector3& v);
 
 };
 
@@ -58,6 +65,9 @@ public:
 inline Vector3 operator*(float s, const Vector3& v) {
     return Vector3(v.x * s, v.y * s, v.z * s);
 }
-
+inline const Vector3 Vector3::zero = Vector3(0, 0, 0);
+inline const Vector3 Vector3::unitX = Vector3(1, 0, 0);
+inline const Vector3 Vector3::unitY = Vector3(0, 1, 0);
+inline const Vector3 Vector3::unitZ = Vector3(0, 0, 1);
 
 #endif//VECTOR3_H
