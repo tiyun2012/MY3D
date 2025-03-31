@@ -10,6 +10,7 @@
           "-g",
           "main.cpp",
           "vector3.cpp",
+          "matrix4.cpp",
           "-o",
           "${cwd}/mathTest.exe"
         ],
