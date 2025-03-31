@@ -1,73 +1,89 @@
-//#pragma once
 #ifndef VECTOR3_H
 #define VECTOR3_H
+
 #include <iostream>
 #include <cmath>
+#include <limits>
 
-// Define M_PI if not defined
+// Define M_PI if not defined (used in angle calculations)
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
+
 class Vector3 {
 public:
-	// Data members
-	float x, y, z;
-	// static constants
-	 static const Vector3 zero; 
-	 static const Vector3 unitX;
-	 static const Vector3 unitY;
-	 static const Vector3 unitZ;
-	// constructor
-	//making a vector object default
-	Vector3();
-	//making vector object from given value
-	Vector3(float xi, float yi, float zi);
-	// Arithmetic operators
-	Vector3 operator+(const Vector3& v) const;
+    // Public data members for direct access
+    float x, y, z;
 
-	Vector3 operator-(const Vector3& v) const;
+    // Static constant vectors
+    static const Vector3 zero;    // (0, 0, 0)
+    static const Vector3 unitX;   // (1, 0, 0)
+    static const Vector3 unitY;   // (0, 1, 0)
+    static const Vector3 unitZ;   // (0, 0, 1)
 
-	Vector3 operator*(float s) const;
+    // Constructors
+    Vector3() : x(0), y(0), z(0) {}
+    Vector3(float x, float y, float z) : x(x), y(y), z(z) {}
 
-	float operator*(const Vector3& v) const;// dot product
+    // Arithmetic operators
+    Vector3 operator+(const Vector3& other) const; // Vector addition
+    Vector3 operator-(const Vector3& other) const; // Vector subtraction
+    Vector3 operator*(float scalar) const;         // Scalar multiplication
+    Vector3 operator/(float scalar) const;         // Scalar division
+    Vector3 operator-() const;                     // Negation
 
-	Vector3 operator/(float s) const;
+    // Compound assignment operators (in-place modification)
+    Vector3& operator+=(const Vector3& other);
+    Vector3& operator-=(const Vector3& other);
+    Vector3& operator*=(float scalar);
+    Vector3& operator/=(float scalar);
 
-	Vector3 operator-() const;
-	// compound assigment operators
-	Vector3& operator+=(const Vector3&v);
-	Vector3& operator-=(const Vector3&v);
-	Vector3& operator*=(float s);
-	Vector3& operator/=(float s);
-	float length() const;
-	float lengthSquared() const;
-	//
-	Vector3 normalized() const;
+    // Vector operations
+    /** Returns the length (magnitude) of the vector */
+    inline float length() const { return std::sqrt(x * x + y * y + z * z); }
 
-	Vector3 cross(const Vector3& v) const;
+    /** Returns the squared length of the vector (faster than length()) */
+    inline float lengthSquared() const { return x * x + y * y + z * z; }
 
-	float dot(const Vector3& v) const;
-	float angleBetween(const Vector3& v) const;
-	Vector3 projectOnto(const Vector3& v) const;
-	Vector3 reflectOver(const Vector3& normal) const;
-	// Comparison operators
-	bool isZero() const;
-	bool operator==(const Vector3& v)const;
-	bool operator!=(const Vector3& v)const;
+    /** Returns a normalized copy of the vector (unit vector), or zero if length is zero */
+    Vector3 normalized() const;
 
-	// Static methods (utility methods)
-	static Vector3 lerp(const Vector3&v1,const Vector3&v2,float t);
-	friend std::ostream& operator<<(std::ostream& os, const Vector3& v);
+    /** Returns the cross product of this vector and another */
+    Vector3 cross(const Vector3& other) const;
 
+    /** Returns the dot product of this vector and another */
+    inline float dot(const Vector3& other) const { return x * other.x + y * other.y + z * other.z; }
+
+    /** Returns the angle (in radians) between this vector and another */
+    float angleBetween(const Vector3& other) const;
+
+    /** Projects this vector onto another vector */
+    Vector3 projectOnto(const Vector3& other) const;
+
+    /** Reflects this vector over a normal vector */
+    Vector3 reflectOver(const Vector3& normal) const;
+
+    // Comparison operators
+    /** Checks if the vector is approximately zero (using epsilon) */
+    bool isZero() const;
+
+    /** Checks if two vectors are approximately equal (using epsilon) */
+    bool operator==(const Vector3& other) const;
+
+    /** Checks if two vectors are not approximately equal */
+    bool operator!=(const Vector3& other) const;
+
+    // Static utility methods
+    /** Linearly interpolates between two vectors based on t (0 to 1) */
+    static Vector3 lerp(const Vector3& v1, const Vector3& v2, float t);
+
+    // Friend function for output streaming
+    friend std::ostream& operator<<(std::ostream& os, const Vector3& v);
 };
 
-// Non-member operator overload to allow scalar multiplication from the left
-inline Vector3 operator*(float s, const Vector3& v) {
-    return Vector3(v.x * s, v.y * s, v.z * s);
+// Non-member operator for scalar multiplication from the left (e.g., 2 * vector)
+inline Vector3 operator*(float scalar, const Vector3& v) {
+    return Vector3(v.x * scalar, v.y * scalar, v.z * scalar);
 }
-inline const Vector3 Vector3::zero = Vector3(0, 0, 0);
-inline const Vector3 Vector3::unitX = Vector3(1, 0, 0);
-inline const Vector3 Vector3::unitY = Vector3(0, 1, 0);
-inline const Vector3 Vector3::unitZ = Vector3(0, 0, 1);
 
-#endif//VECTOR3_H
+#endif // VECTOR3_H

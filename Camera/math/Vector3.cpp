@@ -1,140 +1,123 @@
-// Define a 3D vector class
-#include"Vector3.h"
+#include "vector3.h"
 
-// Constructors
-Vector3::Vector3() : x(0), y(0), z(0) {};
-Vector3::Vector3(float xi, float yi, float zi) : x(xi), y(yi), z(zi) {}
+// Static constant definitions (One Definition Rule compliance)
+const Vector3 Vector3::zero(0, 0, 0);
+const Vector3 Vector3::unitX(1, 0, 0);
+const Vector3 Vector3::unitY(0, 1, 0);
+const Vector3 Vector3::unitZ(0, 0, 1);
 
-// ++++++++ ARITHMETIC OPERATORS ++++++++
-    // Vector addition, not change argument and object
- Vector3 Vector3::operator+(const Vector3 & v) const {
-        return Vector3(x + v.x, y + v.y, z + v.z);
-    }
-
-// Vector subtraction
-Vector3 Vector3::operator-(const Vector3& v) const {
-    return Vector3(x - v.x, y - v.y, z - v.z);
+// Arithmetic operators
+Vector3 Vector3::operator+(const Vector3& other) const {
+    return Vector3(x + other.x, y + other.y, z + other.z);
 }
 
-// Scalar multiplication
-Vector3 Vector3::operator*(float s) const {
-    return Vector3(x * s, y * s, z * s);
-}
-// Scalar multiplication
-float Vector3::operator*(const Vector3& v) const {
-    return (x * v.x+ y * v.y+ z * v.z);
+Vector3 Vector3::operator-(const Vector3& other) const {
+    return Vector3(x - other.x, y - other.y, z - other.z);
 }
 
-
-    // Scalar division
-Vector3 Vector3::operator/(float s) const {
-    return Vector3(x / s, y / s, z / s);
+Vector3 Vector3::operator*(float scalar) const {
+    return Vector3(x * scalar, y * scalar, z * scalar);
 }
 
-// Unary minus operator
+Vector3 Vector3::operator/(float scalar) const {
+    return Vector3(x / scalar, y / scalar, z / scalar);
+}
+
 Vector3 Vector3::operator-() const {
     return Vector3(-x, -y, -z);
 }
-// compound assignment operators
-Vector3 &Vector3::operator+=(const Vector3 &v)
-{
-    return *this = *this + v;
+
+// Compound assignment operators
+Vector3& Vector3::operator+=(const Vector3& other) {
+    x += other.x;
+    y += other.y;
+    z += other.z;
+    return *this;
 }
 
-Vector3 &Vector3::operator-=(const Vector3 &v)
-{
-    return *this = *this - v;
+Vector3& Vector3::operator-=(const Vector3& other) {
+    x -= other.x;
+    y -= other.y;
+    z -= other.z;
+    return *this;
 }
 
-Vector3 &Vector3::operator*=(float s)
-{
-    return *this = *this * s;
+Vector3& Vector3::operator*=(float scalar) {
+    x *= scalar;
+    y *= scalar;
+    z *= scalar;
+    return *this;
 }
 
-Vector3 &Vector3::operator/=(float s)
-{
-    return *this = *this / s;
+Vector3& Vector3::operator/=(float scalar) {
+    x /= scalar;
+    y /= scalar;
+    z /= scalar;
+    return *this;
 }
 
-// Vector length
-float Vector3::length() const {
-    return sqrtf(x * x + y * y + z * z);
-}
-
-float Vector3::lengthSquared() const
-{
-    return x * x + y * y + z * z;
-}
-
-// Normalize vector
+// Vector operations
 Vector3 Vector3::normalized() const {
     float len = length();
-    return (len>0)?*this/len:Vector3(0,0,0);
+    if (len < 1e-6f) return Vector3(0, 0, 0); // Avoid division by near-zero
+    return *this / len;
 }
 
-// Cross product
-/*
-
-*/
-Vector3 Vector3::cross(const Vector3& v) const {
-    return Vector3(y * v.z - z * v.y,
-        z * v.x - x * v.z,
-        x * v.y - y * v.x);
+Vector3 Vector3::cross(const Vector3& other) const {
+    return Vector3(y * other.z - z * other.y,
+                   z * other.x - x * other.z,
+                   x * other.y - y * other.x);
 }
 
-// Dot product
-float Vector3::dot(const Vector3& v) const {
-    return x * v.x + y * v.y + z * v.z;
+float Vector3::angleBetween(const Vector3& other) const {
+    float dotProd = dot(other);
+    float lenSq1 = lengthSquared();
+    float lenSq2 = other.lengthSquared();
+    if (lenSq1 == 0 || lenSq2 == 0) return 0; // Handle zero-length vectors
+    float cosTheta = dotProd / std::sqrt(lenSq1 * lenSq2);
+    cosTheta = std::max(-1.0f, std::min(1.0f, cosTheta)); // Clamp to [-1, 1]
+    return std::acos(cosTheta);
 }
 
-float Vector3::angleBetween(const Vector3 &v) const
-{
-    float len1=this->length();
-    float len2=v.length();
-    if(len1==0 || len2==0)
-        return 0;
-    return acosf((*this*v)/(len1*len2));
+Vector3 Vector3::projectOnto(const Vector3& other) const {
+    float lenSq = other.lengthSquared();
+    if (lenSq == 0) return Vector3(0, 0, 0); // Handle zero-length projection vector
+    float scalar = dot(other) / lenSq;
+    return other * scalar;
 }
 
-Vector3 Vector3::projectOnto(const Vector3 &v) const
-{
-    float secondVectorLength = v.length();
-    if(secondVectorLength == 0)
-        return Vector3(0, 0, 0);
-    return ((*this * v) / secondVectorLength)*v.normalized();
+Vector3 Vector3::reflectOver(const Vector3& normal) const {
+    Vector3 unitNormal = normal.normalized();
+    if (unitNormal.isZero()) return Vector3(0, 0, 0); // Handle invalid normal
+    return 2 * projectOnto(unitNormal) - *this;
 }
 
-Vector3 Vector3::reflectOver(const Vector3 &v) const
-{
-    if(v!=Vector3())
-    {
-        return 2 * this->projectOnto(v)-*this;
-    }
-    return Vector3();
+// Comparison operators
+bool Vector3::isZero() const {
+    const float epsilon = 1e-6f;
+    return std::fabs(x) < epsilon && std::fabs(y) < epsilon && std::fabs(z) < epsilon;
 }
 
-bool Vector3::isZero() const
-{
-    return (x == 0 && y == 0 && z == 0);
+bool Vector3::operator==(const Vector3& other) const {
+    const float epsilon = 1e-6f;
+    return std::fabs(x - other.x) < epsilon &&
+           std::fabs(y - other.y) < epsilon &&
+           std::fabs(z - other.z) < epsilon;
 }
 
-bool Vector3::operator==(const Vector3 &v) const
-{
-    return (x == v.x && y == v.y && z == v.z);
+bool Vector3::operator!=(const Vector3& other) const {
+    return !(*this == other);
 }
 
-bool Vector3::operator!=(const Vector3 &v) const
-{
-    return (x!=v.x || y!=v.y || z!=v.z);
+// Static utility methods
+Vector3 Vector3::lerp(const Vector3& v1, const Vector3& v2, float t) {
+    return Vector3(v1.x + t * (v2.x - v1.x),
+                   v1.y + t * (v2.y - v1.y),
+                   v1.z + t * (v2.z - v1.z));
 }
 
-Vector3 Vector3::lerp(const Vector3 &v1, const Vector3 &v2,float t) 
-{
-    return Vector3(v1.x+t*(v2.x-v1.x),v1.y+t*(v2.y-v1.y),v1.z+t*(v2.z-v1.z));
-}
-
-std::ostream &operator<<(std::ostream &os, const Vector3 &v)
-{
-    os<<"(" << v.x << ", " << v.y << ", " << v.z<<")";
+// Friend function for output
+std::ostream& operator<<(std::ostream& os, const Vector3& v) {
+    os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
     return os;
 }
