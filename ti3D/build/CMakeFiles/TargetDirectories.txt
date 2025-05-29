@@ -1,0 +1,3 @@
+C:/Users/pc/Desktop/Dev/ti3D/build/CMakeFiles/Ti3D.dir
+C:/Users/pc/Desktop/Dev/ti3D/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/pc/Desktop/Dev/ti3D/build/CMakeFiles/ZERO_CHECK.dir
