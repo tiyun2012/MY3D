@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/TiMath",
+                "${workspaceFolder}/camera",
+                "C:/Users/pc/Desktop/Dev/ti3D/ThirdParty/glfw-3.4/include",
+                "C:/Users/pc/Desktop/Dev/ti3D/ThirdParty/gladLib/include"
+            ],
+            "defines": [],
+            "compilerPath": "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.x.x/bin/Hostx64/x64/cl.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "msvc-x64"
+        }
+    ],
+    "version": 4
+}

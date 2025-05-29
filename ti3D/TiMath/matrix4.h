@@ -4,37 +4,46 @@
 #include <array>
 #include <cmath>
 #include <ostream>
-#include "vector3.h" // Assuming Vector3 is defined in vector3.h
+#include "Vector3.h"
 
+namespace TiMath {
+
+/**
+ * @class Matrix4
+ * @brief A 4x4 matrix class for 3D transformations.
+ */
 class Matrix4 {
 public:
     std::array<float, 16> m; // Column-major order
 
-    // Default constructor: initializes to identity matrix at compile time
-    constexpr Matrix4() : m{1.0f, 0.0f, 0.0f, 0.0f,  // Column 0
-                            0.0f, 1.0f, 0.0f, 0.0f,  // Column 1
-                            0.0f, 0.0f, 1.0f, 0.0f,  // Column 2
-                            0.0f, 0.0f, 0.0f, 1.0f}  // Column 3
-    {}
+    // Default constructor: initializes to identity matrix
+    constexpr Matrix4() : m{1.0f, 0.0f, 0.0f, 0.0f,
+                            0.0f, 1.0f, 0.0f, 0.0f,
+                            0.0f, 0.0f, 1.0f, 0.0f,
+                            0.0f, 0.0f, 0.0f, 1.0f} {}
 
-    // Loads the identity matrix (non-constexpr due to runtime modification)
-    void loadIdentity() ;
-    [[nodiscard]] static const Matrix4 getIdentity() {
-        static constexpr Matrix4 identity;
+    // Loads the identity matrix
+    void loadIdentity();
 
-        return identity;
+    // Get identity matrix
+    [[nodiscard]] static constexpr Matrix4 getIdentity() {
+        return Matrix4();
     }
 
     // Matrix multiplication
     [[nodiscard]] Matrix4 operator*(const Matrix4& other) const;
 
-    // Static methods to create specific matrices
+    // Static transformation methods
     [[nodiscard]] static Matrix4 translation(const Vector3& v);
     [[nodiscard]] static Matrix4 rotationAxis(const Vector3& axis, float angleDegrees);
     [[nodiscard]] static Matrix4 perspective(float fovYDegrees, float aspect, float zNear, float zFar);
 
-    // Friend function for output streaming
+    // Inverse matrix
+    [[nodiscard]] Matrix4 inverse() const;
+
     friend std::ostream& operator<<(std::ostream& os, const Matrix4& mat);
 };
+
+} // namespace TiMath
 
 #endif // MATRIX4_H

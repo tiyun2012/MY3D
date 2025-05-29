@@ -4,10 +4,9 @@
         {
             "label": "CMake: Create Build Directory",
             "type": "shell",
-            "command": "if (!(Test-Path build)) { mkdir build }",
+            "command": "cmake -E make_directory ${workspaceFolder}/build",
             "group": "build",
-            "problemMatcher": [],
-            "isBackground": false
+            "problemMatcher": []
         },
         {
             "label": "CMake: Configure",
@@ -15,16 +14,11 @@
             "command": "cmake",
             "args": [
                 "-S", "${workspaceFolder}",
-                "-B", "${workspaceFolder}/build",
-                "-G", "Visual Studio 17 2022",
-                "-A", "x64"
+                "-B", "${workspaceFolder}/build"
             ],
-            "options": {
-                "cwd": "${workspaceFolder}/build"
-            },
+            "options": { "cwd": "${workspaceFolder}/build" },
             "group": "build",
             "problemMatcher": ["$msCompile"],
-            "isBackground": false,
             "dependsOn": "CMake: Create Build Directory"
         },
         {
@@ -36,15 +30,12 @@
                 "--config", "Debug",
                 "--verbose"
             ],
-            "options": {
-                "cwd": "${workspaceFolder}/build"
-            },
+            "options": { "cwd": "${workspaceFolder}/build" },
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
             "problemMatcher": ["$msCompile"],
-            "isBackground": false,
             "dependsOn": "CMake: Configure"
         },
         {
@@ -53,7 +44,6 @@
             "command": "${workspaceFolder}/build/Debug/Ti3D.exe",
             "group": "build",
             "problemMatcher": [],
-            "isBackground": false,
             "dependsOn": "CMake: Build"
         }
     ]

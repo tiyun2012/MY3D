@@ -1,49 +1,44 @@
 cmake_minimum_required(VERSION 3.10)
-
-project(Ti3D VERSION 1.0 LANGUAGES CXX)
-# Description: A simple 3D graphics engine
-# Author: NHAT PHAN
+project(Ti3D)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Find GLFW
-find_library(GLFW_LIBRARY NAMES glfw3 glfw PATHS ${CMAKE_SOURCE_DIR}/ThirdParty/glfw-3.4/lib-vc2022)
-if(NOT GLFW_LIBRARY)
-    message(FATAL_ERROR "GLFW library not found. Please ensure it is built and located in ThirdParty/glfw-3.4/lib-vc2022")
-endif()
+# Set paths for third-party libraries
+set(GLFW3_DIR "C:/Users/pc/Desktop/Dev/ti3D/ThirdParty/glfw-3.4")
+set(GLAD_DIR "C:/Users/pc/Desktop/Dev/ti3D/ThirdParty/gladLib")
 
-# Find OpenGL
-find_package(OpenGL REQUIRED)
+# Add GLFW3 to CMAKE_PREFIX_PATH
+list(APPEND CMAKE_PREFIX_PATH "${GLFW3_DIR}")
 
-# Add GLAD source file
-set(GLAD_SRC ${CMAKE_SOURCE_DIR}/ThirdParty/gladLib/src/glad.c)
-if(NOT EXISTS ${GLAD_SRC})
-    message(FATAL_ERROR "GLAD source file not found: ${GLAD_SRC}")
-endif()
-
-# Force glad.c to be compiled as C, not C++, to avoid symbol mismatch when linking with C++ code
-set_source_files_properties(${GLAD_SRC} PROPERTIES LANGUAGE C)
+# Include directories
+include_directories(
+    ${GLFW3_DIR}/include
+    ${GLAD_DIR}/include
+    ${CMAKE_SOURCE_DIR}/TiMath
+    ${CMAKE_SOURCE_DIR}/camera
+)
 
 # Source files
-set(SRC_FILES
+set(SOURCES
+    # main.cpp
     camera/Camera.cpp
-    ${GLAD_SRC}
+    TiMath/Vector3.cpp
+    TiMath/Quaternion.cpp
+    TiMath/Matrix4.cpp
+    ${GLAD_DIR}/src/glad.c
 )
 
-# Define the executable
-add_executable(${PROJECT_NAME} ${SRC_FILES})
+# Create executable
+add_executable(Ti3D ${SOURCES})
 
-# Include directories (glad first, then glfw)
-target_include_directories(${PROJECT_NAME} PRIVATE 
-    ${CMAKE_SOURCE_DIR}/ThirdParty/gladLib/include
-    ${CMAKE_SOURCE_DIR}/ThirdParty/glfw-3.4/include
-)
+# Link libraries
+# For MSVC, link to the static library directly
+if (MSVC)
+    target_link_libraries(Ti3D PRIVATE ${GLFW3_DIR}/lib-vc2022/glfw3_mt.lib)
+else()
+    target_link_libraries(Ti3D PRIVATE glfw)
+endif()
 
-target_link_libraries(${PROJECT_NAME} PRIVATE ${GLFW_LIBRARY} OpenGL::GL)
-
-# Set output name
-set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "Ti3D" SUFFIX ".exe")
-
-# Enable verbose output for debugging
-set(CMAKE_VERBOSE_MAKEFILE ON)
+# Set output directory
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
