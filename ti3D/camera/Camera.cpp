@@ -3,7 +3,6 @@
 
 namespace Ti3D {
 
-// Static callback function for framebuffer size changes
 static void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
     Ti3D::Camera* cam = static_cast<Ti3D::Camera*>(glfwGetWindowUserPointer(window));
@@ -57,8 +56,8 @@ int main() {
         camera.processInput(window, deltaTime);
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
-        camera.processMouseInput(window, xpos, ypos);
-        camera.update(deltaTime);
+        camera.processMouseInput(window, -xpos, ypos);
+        // camera.update(deltaTime); // Uncommented to enable automatic rotation
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
