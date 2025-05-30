@@ -1,7 +1,11 @@
 Ti3D/
+├── .vscode/
+│   ├── tasks.json
+├── app/
+│   ├── main.cpp
 ├── camera/
 │   ├── Camera.h
-│   ├── Camera.cpp
+│   ├── Camera.cpp  (optional, empty for future use)
 ├── renderer/
 │   ├── Renderer.h
 │   ├── Renderer.cpp
@@ -16,5 +20,3 @@ Ti3D/
 │   ├── glfw-3.4/
 │   ├── gladLib/
 ├── CMakeLists.txt
-├── .vscode/
-    ├──tasks.json

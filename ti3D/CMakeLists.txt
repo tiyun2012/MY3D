@@ -17,12 +17,15 @@ include_directories(
     ${GLAD_DIR}/include
     ${CMAKE_SOURCE_DIR}/TiMath
     ${CMAKE_SOURCE_DIR}/camera
+    ${CMAKE_SOURCE_DIR}/renderer
+    ${CMAKE_SOURCE_DIR}/app
 )
 
 # Source files
 set(SOURCES
-    # main.cpp
+    app/main.cpp
     camera/Camera.cpp
+    renderer/Renderer.cpp
     TiMath/Vector3.cpp
     TiMath/Quaternion.cpp
     TiMath/Matrix4.cpp
@@ -33,7 +36,6 @@ set(SOURCES
 add_executable(Ti3D ${SOURCES})
 
 # Link libraries
-# For MSVC, link to the static library directly
 if (MSVC)
     target_link_libraries(Ti3D PRIVATE ${GLFW3_DIR}/lib-vc2022/glfw3_mt.lib)
 else()
