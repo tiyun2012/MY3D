@@ -32,7 +32,7 @@ Vector3 Vector3::projectOnto(const Vector3& other) const {
 Vector3 Vector3::reflectOver(const Vector3& normal) const {
     Vector3 unitNormal = normal.normalized();
     if (unitNormal.isZero()) {
-        return Vector3(0.0f, 0.0f, 0.0f);
+        throw std::runtime_error("Zero-length normal in Vector3::reflectOver");
     }
     float dotProd = dot(unitNormal);
     return *this - unitNormal * (2.0f * dotProd);
