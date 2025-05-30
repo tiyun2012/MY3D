@@ -166,7 +166,13 @@ public:
         const float epsilon = 1e-6f;
         return std::fabs(x) < epsilon && std::fabs(y) < epsilon && std::fabs(z) < epsilon;
     }
-
+    /**
+     * @brief Checks if all components are finite (not NaN or Infinity).
+     * @return True if all components are finite, false otherwise.
+     */
+    [[nodiscard]] inline bool isFinite() const {
+        return std::isfinite(x) && std::isfinite(y) && std::isfinite(z);
+    }
     /**
      * @brief Checks if two vectors are approximately equal.
      * @param other The vector to compare with.
