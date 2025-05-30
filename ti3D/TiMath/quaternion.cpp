@@ -2,6 +2,9 @@
 
 namespace TiMath {
 
+// Static constant definition
+const Quaternion Quaternion::identity(1.0f, 0.0f, 0.0f, 0.0f);
+
 Matrix4 Quaternion::toMatrix() const {
     Matrix4 result;
     float xx = x * x, yy = y * y, zz = z * z;
