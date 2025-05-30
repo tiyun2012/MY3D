@@ -8,7 +8,7 @@ float Vector2::length() const {
 
 Vector2 Vector2::normalized() const {
     float len = length();
-    if (len < 1e-6f) {
+    if (len < TiMath::EPSILON) {
         throw std::runtime_error("Cannot normalize zero vector");
     }
     return Vector2(x / len, y / len);
@@ -16,20 +16,22 @@ Vector2 Vector2::normalized() const {
 
 Vector2 Vector2::reflectOver(const Vector2& normal) const {
     Vector2 unitNormal = normal.normalized();
-    if (unitNormal.isZero()) {
-        throw std::runtime_error("Zero-length normal in Vector2::reflectOver");
-    }
     float dotProd = dot(unitNormal);
     return *this - unitNormal * (2.0f * dotProd);
 }
 
 Vector2 Vector2::projectOnto(const Vector2& target) const {
-    if (target.isZero()) {
+    float lenSq = target.lengthSquared();
+    if (lenSq < TiMath::EPSILON) {
         throw std::runtime_error("Cannot project onto zero vector");
     }
-    float dotProd = dot(target);
-    float targetLenSq = target.dot(target);
-    return target * (dotProd / targetLenSq);
+    float scalar = dot(target) / lenSq;
+    return target * scalar;
+}
+
+std::ostream& operator<<(std::ostream& os, const Vector2& v) {
+    os << "(" << v.x << ", " << v.y << ")";
+    return os;
 }
 
 } // namespace TiMath
