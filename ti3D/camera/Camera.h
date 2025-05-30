@@ -38,22 +38,31 @@ public:
             distance = std::max(1.0f, distance - distanceStep);
         }
         if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS) {
-            distance += distanceStep;
+            distance = std::min(1000.0f, distance + distanceStep); // Added max distance
         }
         // Pan
-        float moveDistance = moveSpeed * deltaTime;
+        TiMath::Vector3 moveDir(0.0f, 0.0f, 0.0f);
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            target.z -= moveDistance; // Move forward
+            moveDir = (viewMode == ViewMode::Left || viewMode == ViewMode::Right) ?
+                      TiMath::Vector3(0.0f, 1.0f, 0.0f) : // Up in Left/Right view
+                      (viewMode == ViewMode::Top || viewMode == ViewMode::Bottom) ?
+                      TiMath::Vector3(0.0f, 0.0f, -1.0f) : // Forward in Top/Bottom view
+                      TiMath::Vector3(0.0f, 0.0f, -1.0f); // Forward in Far view
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            target.z += moveDistance; // Move backward
+            moveDir = (viewMode == ViewMode::Left || viewMode == ViewMode::Right) ?
+                      TiMath::Vector3(0.0f, -1.0f, 0.0f) : // Down in Left/Right view
+                      (viewMode == ViewMode::Top || viewMode == ViewMode::Bottom) ?
+                      TiMath::Vector3(0.0f, 0.0f, 1.0f) : // Backward in Top/Bottom view
+                      TiMath::Vector3(0.0f, 0.0f, 1.0f); // Backward in Far view
         }
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            target.x -= moveDistance; // Move left
+            moveDir = TiMath::Vector3(-1.0f, 0.0f, 0.0f); // Left in all views
         }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            target.x += moveDistance; // Move right
+            moveDir = TiMath::Vector3(1.0f, 0.0f, 0.0f); // Right in all views
         }
+        target += moveDir * moveSpeed * deltaTime;
         // Switch view mode
         if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
             viewMode = ViewMode::Top;

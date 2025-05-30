@@ -3,6 +3,7 @@
 
 #include <glad/glad.h>
 #include <vector>
+#include <iostream>
 #include "../TiMath/Matrix4.h"
 #include "Camera.h"
 
@@ -106,6 +107,13 @@ private:
         glBindVertexArray(0);
     }
 
+    void checkGLError(const char* operation) {
+        GLenum err;
+        while ((err = glGetError()) != GL_NO_ERROR) {
+            std::cerr << "OpenGL Error during " << operation << ": " << err << std::endl;
+        }
+    }
+
 public:
     Renderer() : shaderProgram(0), axesVAO(0), axesVBO(0), gridVAO(0), gridVBO(0) {
         shaderProgram = createShaderProgram();
@@ -126,6 +134,7 @@ public:
 
         // Initialize grid
         initGrid(10.0f, 1.0f); // 10x10 grid with 1-unit spacing
+        checkGLError("Renderer initialization");
     }
 
     ~Renderer() {
@@ -139,9 +148,8 @@ public:
     void drawAxes(const Camera& camera) {
         glUseProgram(shaderProgram);
         TiMath::Matrix4 mvp = camera.getProjectionMatrix() * camera.getViewMatrix();
-        // Optional: Translate grid to camera's target
-        // TiMath::Matrix4 gridModel = TiMath::Matrix4::translation(camera.target);
-        // TiMath::Matrix4 gridMVP = mvp * gridModel;
+        TiMath::Matrix4 gridModel = TiMath::Matrix4::translation(camera.target);
+        TiMath::Matrix4 gridMVP = mvp * gridModel;
 
         // Draw axes
         glBindVertexArray(axesVAO);
@@ -155,10 +163,12 @@ public:
 
         // Draw grid
         glBindVertexArray(gridVAO);
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uMVP"), 1, GL_FALSE, mvp.m.data()); // Use gridMVP if translating
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uMVP"), 1, GL_FALSE, gridMVP.m.data());
         glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), 0.5f, 0.5f, 0.5f); // Gray grid
         glDrawArrays(GL_LINES, 0, 2 * (2 * static_cast<int>(10.0f / 1.0f) + 1) * 2);
         glBindVertexArray(0);
+
+        checkGLError("drawAxes");
     }
 };
 
