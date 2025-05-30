@@ -5,6 +5,7 @@
 #include <vector>
 #include <iostream>
 #include "../TiMath/Matrix4.h"
+#include "../TiMath/Vector4.h"
 #include "Camera.h"
 
 namespace Ti3D {
@@ -22,9 +23,9 @@ private:
     unsigned int createShaderProgram() {
         const char* vertexShaderSource = R"glsl(
         #version 330 core
-        layout(location = 0) in vec3 aPos;
+        layout(location = 0) in vec4 aPos;
         uniform mat4 uMVP;
-        void main() { gl_Position = uMVP * vec4(aPos, 1.0); }
+        void main() { gl_Position = uMVP * aPos; }
         )glsl";
 
         const char* fragmentShaderSource = R"glsl(
@@ -81,9 +82,11 @@ private:
             gridVertices.push_back(-halfSize); // Start X
             gridVertices.push_back(0.0f);      // Y
             gridVertices.push_back(z);         // Z
+            gridVertices.push_back(1.0f);      // W
             gridVertices.push_back(halfSize);  // End X
             gridVertices.push_back(0.0f);      // Y
             gridVertices.push_back(z);         // Z
+            gridVertices.push_back(1.0f);      // W
         }
 
         // Generate grid lines along Z-axis
@@ -92,9 +95,11 @@ private:
             gridVertices.push_back(x);         // X
             gridVertices.push_back(0.0f);      // Y
             gridVertices.push_back(-halfSize); // Start Z
+            gridVertices.push_back(1.0f);      // W
             gridVertices.push_back(x);         // X
             gridVertices.push_back(0.0f);      // Y
             gridVertices.push_back(halfSize);  // End Z
+            gridVertices.push_back(1.0f);      // W
         }
 
         glGenVertexArrays(1, &gridVAO);
@@ -102,7 +107,7 @@ private:
         glBindVertexArray(gridVAO);
         glBindBuffer(GL_ARRAY_BUFFER, gridVBO);
         glBufferData(GL_ARRAY_BUFFER, gridVertices.size() * sizeof(float), gridVertices.data(), GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
         glBindVertexArray(0);
     }
@@ -119,16 +124,16 @@ public:
         shaderProgram = createShaderProgram();
         // Initialize axes
         float axisVertices[] = {
-            0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f
+            0.0f, 0.0f, 0.0f, 1.0f,  1.0f, 0.0f, 0.0f, 1.0f, // X-axis
+            0.0f, 0.0f, 0.0f, 1.0f,  0.0f, 1.0f, 0.0f, 1.0f, // Y-axis
+            0.0f, 0.0f, 0.0f, 1.0f,  0.0f, 0.0f, 1.0f, 1.0f  // Z-axis
         };
         glGenVertexArrays(1, &axesVAO);
         glGenBuffers(1, &axesVBO);
         glBindVertexArray(axesVAO);
         glBindBuffer(GL_ARRAY_BUFFER, axesVBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(axisVertices), axisVertices, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
         glBindVertexArray(0);
 
