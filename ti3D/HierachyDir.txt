@@ -1,0 +1,20 @@
+Ti3D/
+├── camera/
+│   ├── Camera.h
+│   ├── Camera.cpp
+├── renderer/
+│   ├── Renderer.h
+│   ├── Renderer.cpp
+├── TiMath/
+│   ├── Vector3.h
+│   ├── Vector3.cpp
+│   ├── Quaternion.h
+│   ├── Quaternion.cpp
+│   ├── Matrix4.h
+│   ├── Matrix4.cpp
+├── ThirdParty/
+│   ├── glfw-3.4/
+│   ├── gladLib/
+├── CMakeLists.txt
+├── .vscode/
+    ├──tasks.json

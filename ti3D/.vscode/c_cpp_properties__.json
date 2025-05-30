@@ -5,6 +5,7 @@
             "includePath": [
                 "${workspaceFolder}/TiMath",
                 "${workspaceFolder}/camera",
+                "${workspaceFolder}/renderer",
                 "C:/Users/pc/Desktop/Dev/ti3D/ThirdParty/glfw-3.4/include",
                 "C:/Users/pc/Desktop/Dev/ti3D/ThirdParty/gladLib/include"
             ],

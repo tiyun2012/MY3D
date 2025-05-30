@@ -41,10 +41,19 @@
         {
             "label": "Run Ti3D",
             "type": "shell",
-            "command": "${workspaceFolder}/build/Debug/Ti3D.exe",
+            "command": "${workspaceFolder}/build/Debug/Ti3D${command:cmake.buildProgramExtension}",
+            "options": { "cwd": "${workspaceFolder}/build/Debug" },
             "group": "build",
             "problemMatcher": [],
-            "dependsOn": "CMake: Build"
+            "dependsOn": "CMake: Build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            }
         }
     ]
 }
