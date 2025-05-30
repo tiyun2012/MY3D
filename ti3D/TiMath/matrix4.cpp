@@ -84,6 +84,31 @@ Matrix4 Matrix4::perspective(float fovYDegrees, float aspect, float zNear, float
     return result;
 }
 
+Matrix4 Matrix4::orthographic(float left, float right, float bottom, float top, float near, float far) {
+    Matrix4 result;
+    result.m[0] = 2.0f / (right - left);
+    result.m[1] = 0.0f;
+    result.m[2] = 0.0f;
+    result.m[3] = 0.0f;
+
+    result.m[4] = 0.0f;
+    result.m[5] = 2.0f / (top - bottom);
+    result.m[6] = 0.0f;
+    result.m[7] = 0.0f;
+
+    result.m[8] = 0.0f;
+    result.m[9] = 0.0f;
+    result.m[10] = -2.0f / (far - near);
+    result.m[11] = 0.0f;
+
+    result.m[12] = -(right + left) / (right - left);
+    result.m[13] = -(top + bottom) / (top - bottom);
+    result.m[14] = -(far + near) / (far - near);
+    result.m[15] = 1.0f;
+
+    return result;
+}
+
 Matrix4 Matrix4::inverse() const {
     Matrix4 result;
     float r00 = m[0], r01 = m[4], r02 = m[8];

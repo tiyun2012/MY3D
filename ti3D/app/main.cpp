@@ -27,7 +27,9 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Ti3D", nullptr, nullptr);
+    int width = 800;
+    int height = 600;
+    GLFWwindow* window = glfwCreateWindow(width, height, "Ti3D", nullptr, nullptr);
     if (!window) {
         std::cerr << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -48,17 +50,13 @@ int main() {
     glfwSetFramebufferSizeCallback(window, Ti3D::framebufferSizeCallback);
     glfwSetWindowUserPointer(window, &camera);
 
-    float lastFrame = glfwGetTime();
+    float lastFrame = static_cast<float>(glfwGetTime());
     while (!glfwWindowShouldClose(window)) {
-        float currentFrame = glfwGetTime();
+        float currentFrame = static_cast<float>(glfwGetTime());
         float deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
         camera.processInput(window, deltaTime);
-        double xpos, ypos;
-        glfwGetCursorPos(window, &xpos, &ypos);
-        camera.processMouseInput(window, -xpos, ypos);
-        camera.update(deltaTime); // Enable automatic rotation
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

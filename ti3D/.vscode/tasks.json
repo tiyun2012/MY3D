@@ -54,6 +54,35 @@
                 "showReuseMessage": true,
                 "clear": true
             }
+        },
+        {
+            "label": "Run Ti3D (Debug Fallback)",
+            "type": "shell",
+            "command": "${workspaceFolder}/build/Debug/Ti3D${command:cmake.buildProgramExtension}",
+            "options": { "cwd": "${workspaceFolder}/build/Debug" },
+            "group": "build",
+            "problemMatcher": [],
+            "dependsOn": "CMake: Build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            }
+        },
+        {
+            "label": "Check Executable Path",
+            "type": "shell",
+            "command": "dir ${workspaceFolder}/build/bin || ls ${workspaceFolder}/build/bin; dir ${workspaceFolder}/build/Debug || ls ${workspaceFolder}/build/Debug",
+            "group": "build",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true
+            }
         }
     ]
 }

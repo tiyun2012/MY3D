@@ -37,6 +37,7 @@ public:
     [[nodiscard]] static Matrix4 translation(const Vector3& v);
     [[nodiscard]] static Matrix4 rotationAxis(const Vector3& axis, float angleDegrees);
     [[nodiscard]] static Matrix4 perspective(float fovYDegrees, float aspect, float zNear, float zFar);
+    [[nodiscard]] static Matrix4 orthographic(float left, float right, float bottom, float top, float near, float far);
 
     // Inverse matrix
     [[nodiscard]] Matrix4 inverse() const;
