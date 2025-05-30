@@ -17,3 +17,5 @@ devkit2024
 eigen-master
 glm-master
 rbfQuaternion/setup.log
+# Ignore all files and folders in build/
+Ti3D/build/
