@@ -36,6 +36,7 @@ set(SOURCES
     app/main.cpp
     camera/Camera.cpp
     renderer/Renderer.cpp
+    TiMath/Vector2.cpp
     TiMath/Vector3.cpp
     TiMath/Vector4.cpp  # Added Vector4.cpp
     TiMath/Quaternion.cpp
@@ -55,6 +56,19 @@ else()
     elseif(APPLE)
         target_link_libraries(Ti3D PRIVATE "-framework OpenGL")
     endif()
+endif()
+
+# Force MSVC to use the dynamic runtime (/MD, /MDd) to avoid CRT conflicts
+if(MSVC)
+    foreach(flag_var
+        CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO
+        CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+        CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+        if(${flag_var} MATCHES "/MT")
+            string(REGEX REPLACE "/MT" "/MD" ${flag_var} "${${flag_var}}")
+        endif()
+    endforeach()
 endif()
 
 # Set output directories for multi-config and single-config generators

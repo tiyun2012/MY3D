@@ -2,36 +2,34 @@
 
 namespace TiMath {
 
-// Static constant definitions
-const Vector2 Vector2::zero(0.0f, 0.0f);
-const Vector2 Vector2::unitX(1.0f, 0.0f);
-const Vector2 Vector2::unitY(0.0f, 1.0f);
-const Vector2 Vector2::one(1.0f, 1.0f);
-
-float Vector2::angleBetween(const Vector2& other) const {
-    float lenSq1 = lengthSquared();
-    float lenSq2 = other.lengthSquared();
-    if (lenSq1 < 1e-6f || lenSq2 < 1e-6f) {
-        return 0.0f;
-    }
-    
-    float cosTheta = dot(other) / std::sqrt(lenSq1 * lenSq2);
-    cosTheta = std::clamp(cosTheta, -1.0f, 1.0f);
-    return std::acos(cosTheta);
+float Vector2::length() const {
+    return std::sqrt(x * x + y * y);
 }
 
-Vector2 Vector2::reflect(const Vector2& normal) const {
-    Vector2 n = normal.normalized();
-    if (n.isZero()) {
-        return Vector2(0.0f, 0.0f);
+Vector2 Vector2::normalized() const {
+    float len = length();
+    if (len < 1e-6f) {
+        throw std::runtime_error("Cannot normalize zero vector");
     }
-    float dotProd = dot(n);
-    return *this - n * (2.0f * dotProd);
+    return Vector2(x / len, y / len);
 }
 
-std::ostream& operator<<(std::ostream& os, const Vector2& v) {
-    os << "(" << v.x << ", " << v.y << ")";
-    return os;
+Vector2 Vector2::reflectOver(const Vector2& normal) const {
+    Vector2 unitNormal = normal.normalized();
+    if (unitNormal.isZero()) {
+        throw std::runtime_error("Zero-length normal in Vector2::reflectOver");
+    }
+    float dotProd = dot(unitNormal);
+    return *this - unitNormal * (2.0f * dotProd);
+}
+
+Vector2 Vector2::projectOnto(const Vector2& target) const {
+    if (target.isZero()) {
+        throw std::runtime_error("Cannot project onto zero vector");
+    }
+    float dotProd = dot(target);
+    float targetLenSq = target.dot(target);
+    return target * (dotProd / targetLenSq);
 }
 
 } // namespace TiMath
