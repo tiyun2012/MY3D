@@ -1,6 +1,7 @@
 #include "Matrix4.h"
 #include <algorithm>
 #include <iomanip>
+#include <iostream>
 #include "Vector4.h"
 
 namespace TiMath {
@@ -36,7 +37,8 @@ Matrix4 Matrix4::rotationAxis(const Vector3& axis, float angleDegrees) {
     Matrix4 result;
     Vector3 a = axis.normalized();
     if (a.isZero()) {
-        throw std::runtime_error("Zero-length axis in rotation");
+        std::cerr << "Warning: Zero-length axis in rotation, returning identity" << std::endl;
+        return getIdentity();
     }
     float angle = angleDegrees * static_cast<float>(M_PI) / 180.0f;
     float c = std::cos(angle);
@@ -75,8 +77,9 @@ Matrix4 Matrix4::scaling(const Vector3& s) {
 }
 
 Matrix4 Matrix4::perspective(float fovYDegrees, float aspect, float zNear, float zFar) {
-    if (std::fabs(aspect) < 1e-6f || std::fabs(zNear - zFar) < 1e-6f) {
-        throw std::runtime_error("Invalid perspective parameters");
+    if (std::fabs(aspect) < EPSILON || std::fabs(zNear - zFar) < EPSILON) {
+        std::cerr << "Warning: Invalid perspective parameters, returning identity" << std::endl;
+        return getIdentity();
     }
     Matrix4 result;
     float f = 1.0f / std::tan(fovYDegrees * static_cast<float>(M_PI) / 360.0f);
@@ -109,15 +112,18 @@ Matrix4 Matrix4::orthographic(float left, float right, float bottom, float top, 
 Matrix4 Matrix4::lookAt(const Vector3& eye, const Vector3& target, const Vector3& up) {
     Vector3 dir = (target - eye).normalized();
     if (dir.isZero()) {
-        throw std::runtime_error("Zero-length direction in lookAt");
+        std::cerr << "Warning: Zero-length direction in lookAt, returning identity" << std::endl;
+        return getIdentity();
     }
     Vector3 upNorm = up.normalized();
     if (upNorm.isZero()) {
-        throw std::runtime_error("Zero-length up vector in lookAt");
+        std::cerr << "Warning: Zero-length up vector in lookAt, returning identity" << std::endl;
+        return getIdentity();
     }
     Vector3 right = dir.cross(upNorm).normalized();
     if (right.isZero()) {
-        throw std::runtime_error("Invalid up vector in lookAt");
+        std::cerr << "Warning: Invalid up vector in lookAt, returning identity" << std::endl;
+        return getIdentity();
     }
     Vector3 newUp = right.cross(dir).normalized();
 
@@ -151,8 +157,9 @@ Matrix4 Matrix4::inverse() const {
                 a02 * (a10 * b01 - a11 * b03 + a13 * b05) +
                 a03 * (-a10 * b02 + a11 * b04 - a12 * b05);
 
-    if (std::fabs(det) < 1e-6f) {
-        throw std::runtime_error("Matrix is singular and cannot be inverted");
+    if (std::fabs(det) < EPSILON) {
+        std::cerr << "Warning: Matrix is singular, returning identity" << std::endl;
+        return getIdentity();
     }
     float invDet = 1.0f / det;
 

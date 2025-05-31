@@ -1,18 +1,27 @@
-#include "../camera/Camera.h"
+#include "Camera.h"
 #include "../renderer/Renderer.h"
 #include <iostream>
 
 namespace Ti3D {
-
 static void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
-    Ti3D::Camera* cam = static_cast<Ti3D::Camera*>(glfwGetWindowUserPointer(window));
+    Camera* cam = static_cast<Camera*>(glfwGetWindowUserPointer(window));
     if (cam) {
         cam->setAspectRatio(static_cast<float>(width), static_cast<float>(height));
     }
 }
 
-} // namespace Ti3D
+static void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
+    Camera* cam = static_cast<Camera*>(glfwGetWindowUserPointer(window));
+    if (cam) {
+        static float lastFrame = static_cast<float>(glfwGetTime());
+        float currentFrame = static_cast<float>(glfwGetTime());
+        float deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+        cam->processMouseInput(window, xpos, ypos, deltaTime);
+    }
+}
+}
 
 int main() {
     if (!glfwInit()) {
@@ -27,8 +36,7 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    int width = 800;
-    int height = 600;
+    int width = 800, height = 600;
     GLFWwindow* window = glfwCreateWindow(width, height, "Ti3D", nullptr, nullptr);
     if (!window) {
         std::cerr << "Failed to create GLFW window" << std::endl;
@@ -48,6 +56,7 @@ int main() {
     glEnable(GL_DEPTH_TEST);
 
     glfwSetFramebufferSizeCallback(window, Ti3D::framebufferSizeCallback);
+    glfwSetCursorPosCallback(window, Ti3D::mouseCallback);
     glfwSetWindowUserPointer(window, &camera);
 
     float lastFrame = static_cast<float>(glfwGetTime());
