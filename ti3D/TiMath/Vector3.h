@@ -8,9 +8,6 @@
 #include <ostream>
 #include "TiMathConfig.h"
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
 
 namespace TiMath {
 
@@ -146,7 +143,7 @@ public:
         if (unitAxis.isZero()) {
             return *this; // No rotation if axis is invalid
         }
-        float angleRad = angleDegrees * static_cast<float>(M_PI) / 180.0f;
+        float angleRad = angleDegrees * static_cast<float>(TiMath::PI) / 180.0f;
         float cosA = std::cos(angleRad);
         float sinA = std::sin(angleRad);
         float oneMinusCos = 1.0f - cosA;
