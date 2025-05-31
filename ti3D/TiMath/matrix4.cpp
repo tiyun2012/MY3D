@@ -3,6 +3,9 @@
 #include <iomanip>
 #include <iostream>
 #include "Vector4.h"
+#include "Quaternion.h"
+#include <tuple>
+#include "TiMathConfig.h"
 
 namespace TiMath {
 
@@ -40,7 +43,7 @@ Matrix4 Matrix4::rotationAxis(const Vector3& axis, float angleDegrees) {
         std::cerr << "Warning: Zero-length axis in rotation, returning identity" << std::endl;
         return getIdentity();
     }
-    float angle = angleDegrees * static_cast<float>(M_PI) / 180.0f;
+    float angle = angleDegrees * static_cast<float>(TiMath::PI) / 180.0f;
     float c = std::cos(angle);
     float s = std::sin(angle);
     float t = 1.0f - c;
@@ -82,7 +85,7 @@ Matrix4 Matrix4::perspective(float fovYDegrees, float aspect, float zNear, float
         return getIdentity();
     }
     Matrix4 result;
-    float f = 1.0f / std::tan(fovYDegrees * static_cast<float>(M_PI) / 360.0f);
+    float f = 1.0f / std::tan(fovYDegrees * static_cast<float>(TiMath::PI) / 360.0f);
     result.m[0] = f / aspect;
     result.m[5] = f;
     result.m[10] = (zFar + zNear) / (zNear - zFar);
@@ -106,6 +109,42 @@ Matrix4 Matrix4::orthographic(float left, float right, float bottom, float top, 
     result.m[1] = result.m[2] = result.m[3] = result.m[4] =
     result.m[6] = result.m[7] = result.m[8] = result.m[9] =
     result.m[11] = 0.0f;
+    return result;
+}
+
+Matrix4 Matrix4::frustum(float left, float right, float bottom, float top, float zNear, float zFar) {
+    if (std::fabs(right - left) < EPSILON || std::fabs(top - bottom) < EPSILON || std::fabs(zNear - zFar) < EPSILON) {
+        std::cerr << "Warning: Invalid frustum parameters, returning identity" << std::endl;
+        return getIdentity();
+    }
+    Matrix4 result;
+    result.m[0] = (2.0f * zNear) / (right - left);
+    result.m[5] = (2.0f * zNear) / (top - bottom);
+    result.m[8] = (right + left) / (right - left);
+    result.m[9] = (top + bottom) / (top - bottom);
+    result.m[10] = -(zFar + zNear) / (zFar - zNear);
+    result.m[11] = -1.0f;
+    result.m[14] = -(2.0f * zFar * zNear) / (zFar - zNear);
+    result.m[1] = result.m[2] = result.m[3] = result.m[4] =
+    result.m[6] = result.m[7] = result.m[12] = result.m[13] = result.m[15] = 0.0f;
+    return result;
+}
+
+Matrix4 Matrix4::viewport(float x, float y, float width, float height, float zNear, float zFar) {
+    if (std::fabs(width) < EPSILON || std::fabs(height) < EPSILON) {
+        std::cerr << "Warning: Invalid viewport dimensions, returning identity" << std::endl;
+        return getIdentity();
+    }
+    Matrix4 result;
+    result.m[0] = width / 2.0f;
+    result.m[5] = height / 2.0f;
+    result.m[10] = (zFar - zNear) / 2.0f;
+    result.m[12] = x + width / 2.0f;
+    result.m[13] = y + height / 2.0f;
+    result.m[14] = (zFar + zNear) / 2.0f;
+    result.m[15] = 1.0f;
+    result.m[1] = result.m[2] = result.m[3] = result.m[4] =
+    result.m[6] = result.m[7] = result.m[8] = result.m[9] = result.m[11] = 0.0f;
     return result;
 }
 
@@ -202,6 +241,98 @@ Vector4 operator*(const Matrix4& m, const Vector4& v) {
         m.m[2] * v.x + m.m[6] * v.y + m.m[10] * v.z + m.m[14] * v.w,
         m.m[3] * v.x + m.m[7] * v.y + m.m[11] * v.z + m.m[15] * v.w
     );
+}
+
+Quaternion Matrix4::toQuaternion() const {
+    float trace = m[0] + m[5] + m[10];
+    if (trace > 0.0f) {
+        float s = 0.5f / std::sqrt(trace + 1.0f);
+        return Quaternion(
+            (m[6] - m[9]) * s,
+            (m[8] - m[2]) * s,
+            (m[1] - m[4]) * s,
+            0.25f / s
+        );
+    } else if (m[0] > m[5] && m[0] > m[10]) {
+        float s = 0.5f / std::sqrt(1.0f + m[0] - m[5] - m[10]);
+        return Quaternion(
+            0.25f / s,
+            (m[4] + m[1]) * s,
+            (m[8] + m[2]) * s,
+            (m[6] - m[9]) * s
+        );
+    } else if (m[5] > m[10]) {
+        float s = 0.5f / std::sqrt(1.0f + m[5] - m[0] - m[10]);
+        return Quaternion(
+            (m[4] + m[1]) * s,
+            0.25f / s,
+            (m[9] + m[6]) * s,
+            (m[8] - m[2]) * s
+        );
+    } else {
+        float s = 0.5f / std::sqrt(1.0f + m[10] - m[0] - m[5]);
+        return Quaternion(
+            (m[8] + m[2]) * s,
+            (m[9] + m[6]) * s,
+            0.25f / s,
+            (m[1] - m[4]) * s
+        );
+    }
+}
+
+std::tuple<Vector3, Quaternion, Vector3> Matrix4::decompose() const {
+    // Extract translation from the last column
+    Vector3 translation(m[12], m[13], m[14]);
+
+    // Extract the 3x3 submatrix (columns 0, 1, 2)
+    Vector3 col0(m[0], m[1], m[2]);
+    Vector3 col1(m[4], m[5], m[6]);
+    Vector3 col2(m[8], m[9], m[10]);
+
+    // Compute scaling factors (length of each column)
+    float scaleX = col0.length();
+    float scaleY = col1.length();
+    float scaleZ = col2.length();
+
+    // Check for near-zero scaling factors
+    if (scaleX < EPSILON || scaleY < EPSILON || scaleZ < EPSILON) {
+        std::cerr << "Warning: Near-zero scaling factor in decompose, returning default values" << std::endl;
+        return {translation, Quaternion::identity, Vector3(1.0f, 1.0f, 1.0f)};
+    }
+
+    // Check for negative scaling by computing the determinant
+    Matrix4 rotationMatrix = *this;
+    float det = m[0] * (m[5] * m[10] - m[9] * m[6]) -
+                m[4] * (m[1] * m[10] - m[9] * m[2]) +
+                m[8] * (m[1] * m[6] - m[5] * m[2]);
+    bool negativeScale = det < 0.0f;
+
+    // Normalize columns to isolate rotation matrix
+    rotationMatrix.m[0] /= scaleX;
+    rotationMatrix.m[1] /= scaleX;
+    rotationMatrix.m[2] /= scaleX;
+    rotationMatrix.m[4] /= scaleY;
+    rotationMatrix.m[5] /= scaleY;
+    rotationMatrix.m[6] /= scaleY;
+    rotationMatrix.m[8] /= scaleZ;
+    rotationMatrix.m[9] /= scaleZ;
+    rotationMatrix.m[10] /= scaleZ;
+
+    // Adjust for negative scaling
+    if (negativeScale) {
+        scaleX = -scaleX;
+        rotationMatrix.m[0] = -rotationMatrix.m[0];
+        rotationMatrix.m[1] = -rotationMatrix.m[1];
+        rotationMatrix.m[2] = -rotationMatrix.m[2];
+    }
+
+    // Convert rotation matrix to quaternion
+    Quaternion rotation = rotationMatrix.toQuaternion();
+
+    // Return scaling factors
+    Vector3 scaling(scaleX, scaleY, scaleZ);
+
+    return {translation, rotation, scaling};
 }
 
 } // namespace TiMath

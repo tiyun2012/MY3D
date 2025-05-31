@@ -8,10 +8,7 @@
 #include <ostream>
 #include "TiMathConfig.h"
 #include "Vector3.h"
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+#include "Matrix4.h"
 
 namespace TiMath {
 
@@ -152,7 +149,7 @@ public:
         if (unitAxis.isZero()) {
             return Quaternion(0.0f, 0.0f, 0.0f, 1.0f); // Safe default: identity
         }
-        float angleRad = angleDegrees * static_cast<float>(M_PI) / 180.0f;
+        float angleRad = angleDegrees * static_cast<float>(TiMath::PI) / 180.0f;
         float halfAngle = angleRad * 0.5f;
         float sinHalf = std::sin(halfAngle);
         return Quaternion(
@@ -170,7 +167,7 @@ public:
             return {Vector3(0.0f, 0.0f, 0.0f), 0.0f}; // Safe default
         }
         float angleRad = 2.0f * std::acos(std::clamp(w, -1.0f, 1.0f));
-        return {Vector3(x / len, y / len, z / len), angleRad * 180.0f / static_cast<float>(M_PI)};
+        return {Vector3(x / len, y / len, z / len), angleRad * 180.0f / static_cast<float>(TiMath::PI)};
     }
 
     /** @brief Spherically interpolates between two quaternions. */
@@ -258,6 +255,33 @@ public:
             std::clamp(w, minVal, maxVal)
         );
     }
+    [[nodiscard]] inline Matrix4 Quaternion::toMatrix4() const {
+    Matrix4 result;
+    float xx = x * x, yy = y * y, zz = z * z;
+    float xy = x * y, xz = x * z, yz = y * z;
+    float wx = w * x, wy = w * y, wz = w * z;
+
+    result.m[0] = 1.0f - 2.0f * (yy + zz);
+    result.m[1] = 2.0f * (xy + wz);
+    result.m[2] = 2.0f * (xz - wy);
+    result.m[3] = 0.0f;
+
+    result.m[4] = 2.0f * (xy - wz);
+    result.m[5] = 1.0f - 2.0f * (xx + zz);
+    result.m[6] = 2.0f * (yz + wx);
+    result.m[7] = 0.0f;
+
+    result.m[8] = 2.0f * (xz + wy);
+    result.m[9] = 2.0f * (yz - wx);
+    result.m[10] = 1.0f - 2.0f * (xx + yy);
+    result.m[11] = 0.0f;
+
+    result.m[12] = 0.0f;
+    result.m[13] = 0.0f;
+    result.m[14] = 0.0f;
+    result.m[15] = 1.0f;
+    return result;
+}
 
     friend std::ostream& operator<<(std::ostream& os, const Quaternion& q);
 };

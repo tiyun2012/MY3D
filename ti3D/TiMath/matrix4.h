@@ -9,6 +9,7 @@
 namespace TiMath {
 
 class Vector4; // Forward declaration
+class Quaternion; // Forward declaration
 
 /**
  * @class Matrix4
@@ -56,7 +57,6 @@ public:
      * @param axis The rotation axis (must be non-zero).
      * @param angleDegrees The rotation angle in degrees.
      * @return A 4x4 rotation matrix.
-     * @throws std::runtime_error If the axis is zero-length.
      */
     [[nodiscard]] static Matrix4 rotationAxis(const Vector3& axis, float angleDegrees);
 
@@ -74,7 +74,6 @@ public:
      * @param zNear Near clipping plane.
      * @param zFar Far clipping plane.
      * @return A 4x4 perspective projection matrix.
-     * @throws std::runtime_error If aspect or zNear-zFar is near zero.
      */
     [[nodiscard]] static Matrix4 perspective(float fovYDegrees, float aspect, float zNear, float zFar);
 
@@ -91,21 +90,55 @@ public:
     [[nodiscard]] static Matrix4 orthographic(float left, float right, float bottom, float top, float near, float far);
 
     /**
+     * @brief Creates a frustum projection matrix.
+     * @param left Left plane coordinate.
+     * @param right Right plane coordinate.
+     * @param bottom Bottom plane coordinate.
+     * @param top Top plane coordinate.
+     * @param zNear Near clipping plane.
+     * @param zFar Far clipping plane.
+     * @return A 4x4 frustum projection matrix.
+     */
+    [[nodiscard]] static Matrix4 frustum(float left, float right, float bottom, float top, float zNear, float zFar);
+
+    /**
+     * @brief Creates a viewport transformation matrix.
+     * @param x Leftmost pixel of the viewport.
+     * @param y Bottommost pixel of the viewport.
+     * @param width Width of the viewport in pixels.
+     * @param height Height of the viewport in pixels.
+     * @param zNear Near depth value (typically 0.0).
+     * @param zFar Far depth value (typically 1.0).
+     * @return A 4x4 viewport transformation matrix.
+     */
+    [[nodiscard]] static Matrix4 viewport(float x, float y, float width, float height, float zNear, float zFar);
+
+    /**
      * @brief Creates a look-at view matrix.
      * @param eye The camera position.
      * @param target The target point to look at.
      * @param up The up vector (must be non-zero).
      * @return A 4x4 view matrix.
-     * @throws std::runtime_error If up vector or direction is zero-length.
      */
     [[nodiscard]] static Matrix4 lookAt(const Vector3& eye, const Vector3& target, const Vector3& up);
 
     /**
      * @brief Computes the inverse of the matrix.
      * @return The inverse matrix.
-     * @throws std::runtime_error If the matrix is not invertible.
      */
     [[nodiscard]] Matrix4 inverse() const;
+
+    /**
+     * @brief Converts the matrix to a quaternion representing its rotation component.
+     * @return The rotation as a quaternion.
+     */
+    [[nodiscard]] Quaternion toQuaternion() const;
+
+    /**
+     * @brief Decomposes the matrix into translation, rotation (as a quaternion), and scaling components.
+     * @return A tuple containing the translation (Vector3), rotation (Quaternion), and scaling (Vector3).
+     */
+    [[nodiscard]] std::tuple<Vector3, Quaternion, Vector3> decompose() const;
 
     /**
      * @brief Returns the matrix as an array for graphics APIs.
