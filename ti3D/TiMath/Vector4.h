@@ -9,6 +9,9 @@
 #include "TiMathConfig.h"
 #include "Vector3.h"
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 namespace TiMath {
 
@@ -16,7 +19,7 @@ class Vector4 {
 public:
     float x, y, z, w;
 
-    // Static constants (declarations only)
+    // Static constant declarations
     static const Vector4 zero;
     static const Vector4 unitX;
     static const Vector4 unitY;
