@@ -75,7 +75,8 @@ void Camera::processInput(GLFWwindow* window, float deltaTime) {
 
 void Camera::processMouseInput(GLFWwindow* window, double xpos, double ypos, float deltaTime) {
     static double lastX = 0.0, lastY = 0.0;
-    double deltaX = xpos - lastX, deltaY = ypos - lastY;
+    float deltaX = static_cast<float>(xpos - lastX);
+    float deltaY = static_cast<float>(ypos - lastY);
     lastX = xpos; lastY = ypos;
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
         TiMath::Vector3 moveDir(-deltaX * 0.01f, deltaY * 0.01f, 0.0f);
@@ -102,7 +103,21 @@ TiMath::Matrix4 Camera::getViewMatrix() const {
             up = TiMath::Vector3(0.0f, 0.0f, 1.0f);
             break;
         case ViewMode::Far:
-            position = target + TiMath::Vector3(0.0f, 0.0f, -distance);
+            // Start with position along -Z axis
+            position = TiMath::Vector3(0.0f, 0.0f, -distance);
+            // Apply Y-axis rotation (yaw)
+            TiMath::Matrix4 rotY = TiMath::Matrix4::rotationAxis(TiMath::Vector3(0.0f, 1.0f, 0.0f), yawDegrees);
+            // Apply X-axis rotation (pitch)
+            TiMath::Matrix4 rotX = TiMath::Matrix4::rotationAxis(TiMath::Vector3(1.0f, 0.0f, 0.0f), pitchDegrees);
+            // Combine rotations (Y then X)
+            TiMath::Matrix4 rot = rotX * rotY;
+            // Transform position as a point (w=1)
+            TiMath::Vector3 transformedPos(
+                rot.m[0] * position.x + rot.m[4] * position.y + rot.m[8] * position.z + rot.m[12],
+                rot.m[1] * position.x + rot.m[5] * position.y + rot.m[9] * position.z + rot.m[13],
+                rot.m[2] * position.x + rot.m[6] * position.y + rot.m[10] * position.z + rot.m[14]
+            );
+            position = transformedPos + target;
             break;
     }
     return TiMath::Matrix4::lookAt(position, target, up);

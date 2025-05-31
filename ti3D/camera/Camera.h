@@ -24,11 +24,14 @@ public:
     ViewMode viewMode;
     ProjectionMode projectionMode;
     float fovYDegrees;
+    float yawDegrees;   // Rotation around Y-axis
+    float pitchDegrees; // Rotation around X-axis
 
     Camera()
         : target(0.0f, 0.0f, 0.0f), distance(10.0f), aspectRatio(4.0f / 3.0f),
-          zNear(0.1f), zFar(100.0f), viewMode(ViewMode::Top),
-          projectionMode(ProjectionMode::Orthographic), fovYDegrees(60.0f) {}
+          zNear(0.1f), zFar(100.0f), viewMode(ViewMode::Far),
+          projectionMode(ProjectionMode::Perspective), fovYDegrees(60.0f),
+          yawDegrees(60.0f), pitchDegrees(40.0f) {}
 
     /**
      * @brief Processes keyboard and mouse input for zooming, panning, and view/projection mode switching.
@@ -47,7 +50,7 @@ public:
     void processMouseInput(GLFWwindow* window, double xpos, double ypos, float deltaTime);
 
     /**
-     * @brief Returns the view matrix based on the current view mode.
+     * @brief Returns the view matrix based on the current view mode and rotations.
      * @return A 4x4 view matrix.
      */
     [[nodiscard]] TiMath::Matrix4 getViewMatrix() const;
