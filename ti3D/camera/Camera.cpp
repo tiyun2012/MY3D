@@ -122,16 +122,8 @@ TiMath::Matrix4 Camera::getViewMatrix() const {
             up = TiMath::Vector3(0.0f, 0.0f, 1.0f);
             break;
         case ViewMode::Far:
-            position = TiMath::Vector3(0.0f, 0.0f, -distance);
-            TiMath::Matrix4 rotY = TiMath::Matrix4::rotationAxis(TiMath::Vector3(0.0f, 1.0f, 0.0f), yawDegrees);
-            TiMath::Matrix4 rotX = TiMath::Matrix4::rotationAxis(TiMath::Vector3(1.0f, 0.0f, 0.0f), pitchDegrees);
-            TiMath::Matrix4 rot = rotX * rotY;
-            TiMath::Vector3 transformedPos(
-                rot.m[0] * position.x + rot.m[4] * position.y + rot.m[8] * position.z + rot.m[12],
-                rot.m[1] * position.x + rot.m[5] * position.y + rot.m[9] * position.z + rot.m[13],
-                rot.m[2] * position.x + rot.m[6] * position.y + rot.m[10] * position.z + rot.m[14]
-            );
-            position = transformedPos + target;
+            position = target + TiMath::Vector3(0.0f, 0.0f, -distance);
+            up = TiMath::Vector3(0.0f, 1.0f, 0.0f);
             break;
     }
     return TiMath::Matrix4::lookAt(position, target, up);
