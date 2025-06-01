@@ -148,6 +148,14 @@ public:
         return m.data();
     }
 
+    /**
+     * @brief Returns a pointer to the matrix data for OpenGL compatibility.
+     * @return A pointer to the column-major array.
+     */
+    [[nodiscard]] const float* data() const {
+        return m.data();
+    }
+
     friend std::ostream& operator<<(std::ostream& os, const Matrix4& mat);
     friend Vector4 operator*(const Matrix4& m, const Vector4& v);
 };

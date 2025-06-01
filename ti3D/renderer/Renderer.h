@@ -2,105 +2,43 @@
 #define RENDERER_H
 
 #include <glad/glad.h>
-#include <vector>
-#include <iostream>
-#include "../TiMath/Matrix4.h"
-#include "../TiMath/Vector4.h"
-#include "Camera.h"
+#include <GLFW/glfw3.h>
+#include "../camera/Camera.h"
 
 namespace Ti3D {
 
-/**
- * @class Renderer
- * @brief Manages OpenGL rendering of coordinate axes and a grid plane.
- */
 class Renderer {
 private:
-    unsigned int shaderProgram;
-    unsigned int axesVAO, axesVBO;
-    unsigned int gridVAO, gridVBO;
-    GLint uMVPLocation, uColorLocation;
-    float axisLength; // Length of each axis
-    float gridSize; // Total size of grid (edge to edge)
-    int gridLines; // Number of lines per axis
-    float gridSpacing; // Distance between grid lines
-    bool renderAxes; // Flag to render axes
-    bool renderGrid; // Flag to render grid
+    GLuint axisShaderProgram;
+    GLuint gridShaderProgram;
+    GLuint axisVAO, axisVBO;
+    GLuint gridVAO, gridVBO;
+    bool renderAxes;
+    bool renderGrid;
+    float axisLength;
+    float gridSize;
+    int gridLines;
+    float gridSpacing;
 
-    /**
-     * @brief Creates and compiles the shader program.
-     * @return The shader program ID, or 0 if compilation fails.
-     */
-    unsigned int createShaderProgram();
-
-    /**
-     * @brief Initializes the grid geometry based on view mode and parameters.
-     * @param viewMode Camera view mode to determine grid plane.
-     */
-    void initGrid(Camera::ViewMode viewMode);
-
-    /**
-     * @brief Checks for OpenGL errors and logs them.
-     * @param operation The operation being checked (for error reporting).
-     */
-    void checkGLError(const char* operation);
+    void initAxis();
+    void initGrid();
 
 public:
-    Renderer(float axisLength = 1.0f, float gridSize = 20.0f, int gridLines = 10, float gridSpacing = 2.0f);
+    Renderer(float axisLength, float gridSize, int gridLines, float gridSpacing);
     ~Renderer();
 
-    /**
-     * @brief Reinitializes OpenGL resources (e.g., after context change).
-     */
-    void reinitialize();
-
-    /**
-     * @brief Draws coordinate axes and grid using the provided camera.
-     * @param camera The camera providing view and projection matrices.
-     */
     void drawAxes(const Camera& camera);
-
-    /**
-     * @brief Sets rendering flags for axes and grid.
-     * @param axes Enable/disable axes rendering.
-     * @param grid Enable/disable grid rendering.
-     */
-    void setRenderFlags(bool axes, bool grid) {
-        renderAxes = axes;
-        renderGrid = grid;
-    }
-
-    /**
-     * @brief Sets axis length.
-     * @param length New length for each axis.
-     */
-    void setAxisLength(float length) {
-        axisLength = std::max(0.1f, length); // Prevent zero/negative length
-        reinitialize(); // Update VAO/VBO
-    }
-
-    /**
-     * @brief Sets grid parameters.
-     * @param size Total grid size (edge to edge).
-     * @param lines Number of lines per axis.
-     * @param spacing Distance between grid lines.
-     */
-    void setGridParameters(float size, int lines, float spacing) {
-        gridSize = std::max(1.0f, size);
-        gridLines = std::max(1, lines);
-        gridSpacing = std::max(0.1f, spacing);
-        reinitialize(); // Update grid geometry
-    }
-
-    /**
-     * @brief Getters for rendering flags and parameters.
-     */
+    void drawGrid(const Camera& camera);
+    void setRenderFlags(bool renderAxes, bool renderGrid);
     bool getRenderAxes() const { return renderAxes; }
     bool getRenderGrid() const { return renderGrid; }
-    float getAxisLength() const { return axisLength; }
-    float getGridSize() const { return gridSize; }
-    int getGridLines() const { return gridLines; }
-    float getGridSpacing() const { return gridSpacing; }
+    void setGridParameters(float gridSize, int gridLines);
+
+    // New methods to adjust grid size and lines
+    void increaseGridSize(float increment = 1.0f);
+    void decreaseGridSize(float decrement = 1.0f);
+    void increaseGridLines(int increment = 1);
+    void decreaseGridLines(int decrement = 1);
 };
 
 } // namespace Ti3D

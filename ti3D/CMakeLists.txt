@@ -41,6 +41,7 @@ set(SOURCES
     TiMath/Vector4.cpp  # Added Vector4.cpp
     TiMath/Quaternion.cpp
     TiMath/Matrix4.cpp
+    app/StateManager.cpp
 )
 
 # Create executable
