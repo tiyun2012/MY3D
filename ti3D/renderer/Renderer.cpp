@@ -1,10 +1,11 @@
-#include <glad/glad.h> // GLAD first
+#include <glad/glad.h>
 #include "Renderer.h"
 #include "../TiMath/Vector3.h"
 #include "../app/StateManager.h"
 #include <vector>
 #include <string>
 #include <iostream>
+#include <GLFW/glfw3.h> // For GL types
 
 namespace Ti3D {
 
@@ -100,6 +101,7 @@ static GLuint createShaderProgram(const char* vertexSource, const char* fragment
 Renderer::Renderer(float axisLength, float gridSize, int gridLines, float gridSpacing)
     : renderAxes(true), renderGrid(true), axisLength(axisLength),
       gridSize(gridSize), gridLines(gridLines), gridSpacing(gridSpacing) {
+    // Validate inputs
     if (gridSize <= 0.0f) gridSize = 1.0f;
     if (gridLines < 1) gridLines = 1;
     if (gridSpacing <= 0.0f) gridSpacing = gridSize / static_cast<float>(gridLines);
@@ -139,8 +141,10 @@ void Renderer::initAxis() {
     glBindVertexArray(axisVAO);
     glBindBuffer(GL_ARRAY_BUFFER, axisVBO);
     glBufferData(GL_ARRAY_BUFFER, axisVertices.size() * sizeof(float), axisVertices.data(), GL_STATIC_DRAW);
+    // Position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    // Color attribute
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
     glBindVertexArray(0);
@@ -153,6 +157,7 @@ void Renderer::initGrid() {
         return;
     }
     std::vector<float> gridVertices;
+    // X-axis lines
     for (int i = -gridLines; i <= gridLines; ++i) {
         float z = i * gridSpacing;
         gridVertices.insert(gridVertices.end(), {
@@ -160,6 +165,7 @@ void Renderer::initGrid() {
             gridSize, 0.0f, z
         });
     }
+    // Z-axis lines
     for (int i = -gridLines; i <= gridLines; ++i) {
         float x = i * gridSpacing;
         gridVertices.insert(gridVertices.end(), {
@@ -191,6 +197,7 @@ void Renderer::drawAxes(const Camera& camera, const StateManager& stateManager) 
         return;
     }
     if (stateManager.isCameraUpdated()) {
+        // Debug: Log matrix values
         std::cout << "// Debug: Log matrix values (Axes view): ";
         for (int i = 0; i < 16; ++i) std::cout << view.data()[i] << " ";
         std::cout << "\n";
@@ -201,7 +208,7 @@ void Renderer::drawAxes(const Camera& camera, const StateManager& stateManager) 
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, view.data());
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, projection.data());
     checkGLError("After setting axis uniforms");
-    glDrawArrays(GL_LINES, 0, 6);
+    glDrawArrays(GL_LINES, 0, 6); // X, Y, Z axes (2 vertices each)
     checkGLError("After drawing axes");
     glBindVertexArray(0);
 }
@@ -220,6 +227,7 @@ void Renderer::drawGrid(const Camera& camera, const StateManager& stateManager) 
         return;
     }
     if (stateManager.isCameraUpdated()) {
+        // Debug: Log matrix values
         std::cout << "// Debug: Log matrix values (Grid view): ";
         for (int i = 0; i < 16; ++i) std::cout << view.data()[i] << " ";
         std::cout << "\n";

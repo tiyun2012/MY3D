@@ -7,7 +7,6 @@
 #include <map>
 #include <GLFW/glfw3.h>
 #include "../camera/CameraManager.h"
-#include "../renderer/TargetCamAim.h"
 
 namespace Ti3D {
 
@@ -19,6 +18,7 @@ enum class ContextType {
     Timeline = 2  // Timeline context (placeholder for future)
 };
 
+// Forward declaration of Renderer
 class Renderer;
 
 class StateManager {
@@ -42,17 +42,21 @@ public:
     
     void printControls() const;
 
+    // Update mouse click state and process movement keys based on context
     void updateMouseClickState(GLFWwindow* window);
+
+    // Process camera input and set CameraUpdate
     void updateCameraInput(GLFWwindow* window, double xpos, double ypos);
+
+    // Getter for CameraUpdate
     bool isCameraUpdated() const { return cameraUpdate; }
+
+    // Reset CameraUpdate after processing
     void resetCameraUpdate() { cameraUpdate = false; }
 
-    CameraManager* cameraManager;
+    // Add reference to CameraManager for hotkey actions
+    CameraManager* cameraManager = nullptr;
     void setCameraManager(CameraManager* mgr) { cameraManager = mgr; }
-
-    // TargetCamAim management
-    TargetCamAim& getTargetCamAim() { return targetCamAim; }
-    void focusCameraOnTarget(float distance = 50.0f);
 
 private:
     AppMode currentMode;
@@ -60,13 +64,11 @@ private:
     float hotkeyCooldown;
     float modeCooldown;
     ContextType currentContext;
-    bool cameraUpdate;
+    bool cameraUpdate; // Tracks if camera state changed
     
     std::vector<Hotkey> dccHotkeys;
     std::vector<Hotkey> engineHotkeys;
     std::vector<Hotkey> modeHotkeys;
-    
-    TargetCamAim targetCamAim; // Instance to manage aim point
     
     static const std::map<int, std::string> specialKeyNames;
 };
