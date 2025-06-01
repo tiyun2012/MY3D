@@ -6,6 +6,7 @@
 #include <string>
 #include <map>
 #include <GLFW/glfw3.h>
+#include "../camera/CameraManager.h"
 
 namespace Ti3D {
 
@@ -52,6 +53,10 @@ public:
 
     // Reset CameraUpdate after processing
     void resetCameraUpdate() { cameraUpdate = false; }
+
+    // Add reference to CameraManager for hotkey actions
+    CameraManager* cameraManager = nullptr;
+    void setCameraManager(CameraManager* mgr) { cameraManager = mgr; }
 
 private:
     AppMode currentMode;

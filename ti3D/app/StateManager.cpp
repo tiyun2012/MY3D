@@ -1,5 +1,6 @@
 #include "StateManager.h"
 #include "Renderer.h"
+#include "CameraManager.h"
 #include <GLFW/glfw3.h> // Added for GLFW constants and types
 #include <iostream>
 
@@ -46,6 +47,25 @@ StateManager::StateManager()
           GLFW_KEY_SPACE },
         { GLFW_KEY_X, "Space + X: Decrease grid lines",
           [](Renderer& r) { r.decreaseGridLines(1); },
+          GLFW_KEY_SPACE },
+        // Camera view hotkeys
+        { GLFW_KEY_1, "Space + 1: Perspective View",
+          [this](Renderer&) { if (cameraManager) cameraManager->switchTo(CameraViewType::Perspective); },
+          GLFW_KEY_SPACE },
+        { GLFW_KEY_2, "Space + 2: Front View",
+          [this](Renderer&) { if (cameraManager) cameraManager->switchTo(CameraViewType::Front); },
+          GLFW_KEY_SPACE },
+        { GLFW_KEY_3, "Space + 3: Left View",
+          [this](Renderer&) { if (cameraManager) cameraManager->switchTo(CameraViewType::Left); },
+          GLFW_KEY_SPACE },
+        { GLFW_KEY_4, "Space + 4: Top View",
+          [this](Renderer&) { if (cameraManager) cameraManager->switchTo(CameraViewType::Top); },
+          GLFW_KEY_SPACE },
+        { GLFW_KEY_5, "Space + 5: Back View",
+          [this](Renderer&) { if (cameraManager) cameraManager->switchTo(CameraViewType::Back); },
+          GLFW_KEY_SPACE },
+        { GLFW_KEY_6, "Space + 6: Right View",
+          [this](Renderer&) { if (cameraManager) cameraManager->switchTo(CameraViewType::Right); },
           GLFW_KEY_SPACE }
     };
 

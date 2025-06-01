@@ -1,5 +1,5 @@
 #include <glad/glad.h>
-#include "../camera/Camera.h"
+#include "../camera/CameraManager.h"
 #include "../renderer/Renderer.h"
 #include "StateManager.h"
 #include <iostream>
@@ -53,15 +53,16 @@ int main() {
         return -1;
     }
 
-    Ti3D::Camera camera;
-    camera.setAspectRatio(static_cast<float>(width), static_cast<float>(height));
+    Ti3D::CameraManager cameraManager;
+    cameraManager.getActiveCamera().setAspectRatio(static_cast<float>(width), static_cast<float>(height));
     Ti3D::Renderer renderer(2.0f, 20.0f, 10, 2.0f); // Initial axis length, grid size, lines, spacing
     Ti3D::StateManager stateManager;
+    stateManager.setCameraManager(&cameraManager);
     glEnable(GL_DEPTH_TEST);
 
     glfwSetFramebufferSizeCallback(window, Ti3D::framebufferSizeCallback);
     glfwSetCursorPosCallback(window, Ti3D::mouseCallback);
-    glfwSetWindowUserPointer(window, &camera);
+    glfwSetWindowUserPointer(window, &cameraManager.getActiveCamera());
 
     double lastX = 0.0, lastY = 0.0;
     glfwGetCursorPos(window, &lastX, &lastY);
@@ -83,13 +84,13 @@ int main() {
         stateManager.updateCameraInput(window, xpos, ypos);
 
         // Process camera movement, suppressing in DCC mode when Spacebar is pressed
-        camera.processInput(window, deltaTime, stateManager.getMode() == Ti3D::AppMode::DCC, stateManager.isSpacebarPressed());
+        cameraManager.getActiveCamera().processInput(window, deltaTime, stateManager.getMode() == Ti3D::AppMode::DCC, stateManager.isSpacebarPressed());
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        renderer.drawAxes(camera, stateManager);
-        renderer.drawGrid(camera, stateManager);
+        renderer.drawAxes(cameraManager.getActiveCamera(), stateManager);
+        renderer.drawGrid(cameraManager.getActiveCamera(), stateManager);
 
         // Reset CameraUpdate after rendering
         stateManager.resetCameraUpdate();
