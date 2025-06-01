@@ -1,6 +1,6 @@
-﻿#include "Camera.h"
-#include <algorithm>
+﻿#include <algorithm>
 #include <iostream>
+#include "Camera.h"
 
 namespace Ti3D {
 
@@ -136,6 +136,21 @@ TiMath::Matrix4 Camera::getProjectionMatrix() const {
     float halfHeight = distance;
     float halfWidth = halfHeight * aspectRatio;
     return TiMath::Matrix4::orthographic(-halfWidth, halfWidth, -halfHeight, halfHeight, zNear, zFar);
+}
+
+void Camera::focusOnPoint(const TiMath::Vector3& point, float distance) {
+    target = point;
+    this->distance = distance;
+    if (viewMode == ViewMode::Far) {
+        // Preserve current orientation or set default if needed
+        // If yawDegrees and pitchDegrees are not set meaningfully, use defaults
+        if (std::abs(yawDegrees) < TiMath::EPSILON && std::abs(pitchDegrees) < TiMath::EPSILON) {
+            yawDegrees = 60.0f; // Default from constructor
+            pitchDegrees = 40.0f;
+        }
+        // Camera position will be computed in getViewMatrix using yaw and pitch
+    }
+    // For other view modes, getViewMatrix will compute position based on target and distance
 }
 
 } // namespace Ti3D

@@ -58,6 +58,7 @@ int main() {
     Ti3D::Renderer renderer(2.0f, 20.0f, 10, 2.0f); // Initial axis length, grid size, lines, spacing
     Ti3D::StateManager stateManager;
     stateManager.setCameraManager(&cameraManager);
+    stateManager.setRenderer(&renderer); // Added Renderer reference
     glEnable(GL_DEPTH_TEST);
 
     glfwSetFramebufferSizeCallback(window, Ti3D::framebufferSizeCallback);
@@ -89,8 +90,7 @@ int main() {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        renderer.drawAxes(cameraManager.getActiveCamera(), stateManager);
-        renderer.drawGrid(cameraManager.getActiveCamera(), stateManager);
+        renderer.draw(cameraManager.getActiveCamera(), stateManager); // Updated to use new draw method
 
         // Reset CameraUpdate after rendering
         stateManager.resetCameraUpdate();

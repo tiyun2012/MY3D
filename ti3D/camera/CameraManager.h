@@ -1,9 +1,9 @@
 #ifndef CAMERAMANAGER_H
 #define CAMERAMANAGER_H
 
-#include "Camera.h"
 #include <array>
 #include <optional>
+#include "Camera.h"
 
 namespace Ti3D {
 

@@ -38,6 +38,7 @@ set(SOURCES
     camera/Camera.cpp
     camera/CameraManager.cpp
     renderer/Renderer.cpp
+    renderer/DebugPoint.cpp
     TiMath/Vector2.cpp
     TiMath/Vector3.cpp
     TiMath/Vector4.cpp  # Added Vector4.cpp

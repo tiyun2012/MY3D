@@ -1,9 +1,9 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include <GLFW/glfw3.h>
 #include "../TiMath/Vector3.h"
 #include "../TiMath/Matrix4.h"
+#include <GLFW/glfw3.h>
 
 namespace Ti3D {
 
@@ -70,6 +70,13 @@ public:
     void setAspectRatio(float width, float height) {
         aspectRatio = width / height;
     }
+
+    /**
+     * @brief Focuses the camera on a specific point with a given distance.
+     * @param point The target point to focus on.
+     * @param distance The distance from the point to the camera.
+     */
+    void focusOnPoint(const TiMath::Vector3& point, float distance);
 };
 
 } // namespace Ti3D

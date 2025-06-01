@@ -58,6 +58,9 @@ public:
     CameraManager* cameraManager = nullptr;
     void setCameraManager(CameraManager* mgr) { cameraManager = mgr; }
 
+    // Add reference to Renderer for TargetCamAim access
+    void setRenderer(Renderer* rdr) { renderer = rdr; }
+
 private:
     AppMode currentMode;
     bool spacebarPressed;
@@ -65,6 +68,7 @@ private:
     float modeCooldown;
     ContextType currentContext;
     bool cameraUpdate; // Tracks if camera state changed
+    Renderer* renderer = nullptr; // Added Renderer reference
     
     std::vector<Hotkey> dccHotkeys;
     std::vector<Hotkey> engineHotkeys;

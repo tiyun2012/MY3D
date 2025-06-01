@@ -1,8 +1,8 @@
 #include "StateManager.h"
 #include "Renderer.h"
 #include "CameraManager.h"
-#include <GLFW/glfw3.h> // Added for GLFW constants and types
 #include <iostream>
+#include <GLFW/glfw3.h>
 
 namespace Ti3D {
 
@@ -134,6 +134,17 @@ void StateManager::updateMouseClickState(GLFWwindow* window) {
         std::cout << "Context set to Viewport (1)\n";
     } else if (!currentLeftClickState && lastLeftClickState) {
         // Left click released: no change to context
+    }
+
+    if (currentContext == ContextType::Viewport && glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
+        if (cameraManager && renderer) {
+            cameraManager->getActiveCamera().focusOnPoint(renderer->targetCamAim.position, 50.0f);
+            cameraUpdate = true;
+            std::cout << "Camera focusing on TargetCamAim at position (" 
+                      << renderer->targetCamAim.position.x << ", "
+                      << renderer->targetCamAim.position.y << ", "
+                      << renderer->targetCamAim.position.z << ")\n";
+        }
     }
 
     lastLeftClickState = currentLeftClickState;
