@@ -56,40 +56,52 @@ unsigned int Renderer::createShaderProgram() {
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+    uMVPLocation = glGetUniformLocation(program, "uMVP");
+    uColorLocation = glGetUniformLocation(program, "uColor");
     return program;
 }
 
-void Renderer::initGrid(float cameraDistance) {
-    float size = cameraDistance * 2.0f; // Scale grid with distance
-    float spacing = cameraDistance / 10.0f; // Adjust spacing
+void Renderer::initGrid(Camera::ViewMode viewMode) {
     std::vector<float> gridVertices;
-    int numLines = static_cast<int>(size / spacing);
-    float halfSize = size / 2.0f;
+    float halfSize = gridSize / 2.0f;
+    int numLines = gridLines;
 
-    // Generate grid lines along X-axis
-    for (int i = -numLines; i <= numLines; ++i) {
-        float z = i * spacing;
-        gridVertices.push_back(-halfSize); // Start X
-        gridVertices.push_back(0.0f);      // Y
-        gridVertices.push_back(z);         // Z
-        gridVertices.push_back(1.0f);      // W
-        gridVertices.push_back(halfSize);  // End X
-        gridVertices.push_back(0.0f);      // Y
-        gridVertices.push_back(z);         // Z
-        gridVertices.push_back(1.0f);      // W
-    }
-
-    // Generate grid lines along Z-axis
-    for (int i = -numLines; i <= numLines; ++i) {
-        float x = i * spacing;
-        gridVertices.push_back(x);         // X
-        gridVertices.push_back(0.0f);      // Y
-        gridVertices.push_back(-halfSize); // Start Z
-        gridVertices.push_back(1.0f);      // W
-        gridVertices.push_back(x);         // X
-        gridVertices.push_back(0.0f);      // Y
-        gridVertices.push_back(halfSize);  // End Z
-        gridVertices.push_back(1.0f);      // W
+    if (viewMode == Camera::ViewMode::Left || viewMode == Camera::ViewMode::Right) {
+        // YZ plane (normal along X)
+        for (int i = -numLines; i <= numLines; ++i) {
+            float y = i * gridSpacing;
+            // Line along Z
+            gridVertices.push_back(0.0f); gridVertices.push_back(y); gridVertices.push_back(-halfSize); gridVertices.push_back(1.0f);
+            gridVertices.push_back(0.0f); gridVertices.push_back(y); gridVertices.push_back(halfSize); gridVertices.push_back(1.0f);
+            // Line along Y
+            float z = i * gridSpacing;
+            gridVertices.push_back(0.0f); gridVertices.push_back(-halfSize); gridVertices.push_back(z); gridVertices.push_back(1.0f);
+            gridVertices.push_back(0.0f); gridVertices.push_back(halfSize); gridVertices.push_back(z); gridVertices.push_back(1.0f);
+        }
+    } else if (viewMode == Camera::ViewMode::Far) {
+        // XZ plane (normal along Y)
+        for (int i = -numLines; i <= numLines; ++i) {
+            float x = i * gridSpacing;
+            // Line along Z
+            gridVertices.push_back(x); gridVertices.push_back(0.0f); gridVertices.push_back(-halfSize); gridVertices.push_back(1.0f);
+            gridVertices.push_back(x); gridVertices.push_back(0.0f); gridVertices.push_back(halfSize); gridVertices.push_back(1.0f);
+            // Line along X
+            float z = i * gridSpacing;
+            gridVertices.push_back(-halfSize); gridVertices.push_back(0.0f); gridVertices.push_back(z); gridVertices.push_back(1.0f);
+            gridVertices.push_back(halfSize); gridVertices.push_back(0.0f); gridVertices.push_back(z); gridVertices.push_back(1.0f);
+        }
+    } else {
+        // XY plane (normal along Z) for Top/Bottom/Perspective
+        for (int i = -numLines; i <= numLines; ++i) {
+            float x = i * gridSpacing;
+            // Line along Y
+            gridVertices.push_back(x); gridVertices.push_back(-halfSize); gridVertices.push_back(0.0f); gridVertices.push_back(1.0f);
+            gridVertices.push_back(x); gridVertices.push_back(halfSize); gridVertices.push_back(0.0f); gridVertices.push_back(1.0f);
+            // Line along X
+            float y = i * gridSpacing;
+            gridVertices.push_back(-halfSize); gridVertices.push_back(y); gridVertices.push_back(0.0f); gridVertices.push_back(1.0f);
+            gridVertices.push_back(halfSize); gridVertices.push_back(y); gridVertices.push_back(0.0f); gridVertices.push_back(1.0f);
+        }
     }
 
     glGenVertexArrays(1, &gridVAO);
@@ -109,7 +121,11 @@ void Renderer::checkGLError(const char* operation) {
     }
 }
 
-Renderer::Renderer() : shaderProgram(0), axesVAO(0), axesVBO(0), gridVAO(0), gridVBO(0) {
+Renderer::Renderer(float axisLength, float gridSize, int gridLines, float gridSpacing)
+    : shaderProgram(0), axesVAO(0), axesVBO(0), gridVAO(0), gridVBO(0),
+      axisLength(std::max(0.1f, axisLength)), gridSize(std::max(1.0f, gridSize)),
+      gridLines(std::max(1, gridLines)), gridSpacing(std::max(0.1f, gridSpacing)),
+      renderAxes(true), renderGrid(true) {
     shaderProgram = createShaderProgram();
     if (shaderProgram == 0) {
         std::cerr << "Failed to create shader program. Rendering disabled." << std::endl;
@@ -117,9 +133,9 @@ Renderer::Renderer() : shaderProgram(0), axesVAO(0), axesVBO(0), gridVAO(0), gri
     }
     // Initialize axes
     float axisVertices[] = {
-        0.0f, 0.0f, 0.0f, 1.0f,  1.0f, 0.0f, 0.0f, 1.0f, // X-axis
-        0.0f, 0.0f, 0.0f, 1.0f,  0.0f, 1.0f, 0.0f, 1.0f, // Y-axis
-        0.0f, 0.0f, 0.0f, 1.0f,  0.0f, 0.0f, 1.0f, 1.0f  // Z-axis
+        0.0f, 0.0f, 0.0f, 1.0f,  axisLength, 0.0f, 0.0f, 1.0f, // X-axis
+        0.0f, 0.0f, 0.0f, 1.0f,  0.0f, axisLength, 0.0f, 1.0f, // Y-axis
+        0.0f, 0.0f, 0.0f, 1.0f,  0.0f, 0.0f, axisLength, 1.0f  // Z-axis
     };
     glGenVertexArrays(1, &axesVAO);
     glGenBuffers(1, &axesVBO);
@@ -130,8 +146,8 @@ Renderer::Renderer() : shaderProgram(0), axesVAO(0), axesVBO(0), gridVAO(0), gri
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
 
-    // Initialize grid
-    initGrid(10.0f); // Default distance
+    // Initialize grid (default to Far view for initialization)
+    initGrid(Camera::ViewMode::Far);
     checkGLError("Renderer initialization");
 }
 
@@ -157,9 +173,9 @@ void Renderer::reinitialize() {
     }
     // Reinitialize axes
     float axisVertices[] = {
-        0.0f, 0.0f, 0.0f, 1.0f,  1.0f, 0.0f, 0.0f, 1.0f, // X-axis
-        0.0f, 0.0f, 0.0f, 1.0f,  0.0f, 1.0f, 0.0f, 1.0f, // Y-axis
-        0.0f, 0.0f, 0.0f, 1.0f,  0.0f, 0.0f, 1.0f, 1.0f  // Z-axis
+        0.0f, 0.0f, 0.0f, 1.0f,  axisLength, 0.0f, 0.0f, 1.0f, // X-axis
+        0.0f, 0.0f, 0.0f, 1.0f,  0.0f, axisLength, 0.0f, 1.0f, // Y-axis
+        0.0f, 0.0f, 0.0f, 1.0f,  0.0f, 0.0f, axisLength, 1.0f  // Z-axis
     };
     glGenVertexArrays(1, &axesVAO);
     glGenBuffers(1, &axesVBO);
@@ -171,7 +187,7 @@ void Renderer::reinitialize() {
     glBindVertexArray(0);
 
     // Reinitialize grid
-    initGrid(10.0f);
+    initGrid(Camera::ViewMode::Far); // Default for reinitialization
     checkGLError("Renderer reinitialization");
 }
 
@@ -180,36 +196,39 @@ void Renderer::drawAxes(const Camera& camera) {
 
     glUseProgram(shaderProgram);
     TiMath::Matrix4 mvp = camera.getProjectionMatrix() * camera.getViewMatrix();
-    TiMath::Matrix4 gridModel = TiMath::Matrix4::translation(camera.target);
-    TiMath::Matrix4 gridMVP = mvp * gridModel;
+    TiMath::Matrix4 model = TiMath::Matrix4::getIdentity(); // Centered at origin
 
-    // Reinitialize grid if distance changed significantly
-    static float lastDistance = 0.0f;
-    if (std::fabs(lastDistance - camera.distance) > 0.1f) {
+    // Reinitialize grid if view mode changed
+    static Camera::ViewMode lastViewMode = Camera::ViewMode::Far;
+    if (lastViewMode != camera.viewMode) {
         glDeleteVertexArrays(1, &gridVAO);
         glDeleteBuffers(1, &gridVBO);
-        initGrid(camera.distance);
-        lastDistance = camera.distance;
+        initGrid(camera.viewMode);
+        lastViewMode = camera.viewMode;
     }
 
-    // Draw axes
-    glBindVertexArray(axesVAO);
-    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uMVP"), 1, GL_FALSE, mvp.toArray());
-    glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), 1.0f, 0.0f, 0.0f); // Red X-axis
-    glDrawArrays(GL_LINES, 0, 2);
-    glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), 0.0f, 1.0f, 0.0f); // Green Y-axis
-    glDrawArrays(GL_LINES, 2, 2);
-    glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), 0.0f, 0.0f, 1.0f); // Blue Z-axis
-    glDrawArrays(GL_LINES, 4, 2);
+    if (renderAxes) {
+        glBindVertexArray(axesVAO);
+        glUniformMatrix4fv(uMVPLocation, 1, GL_FALSE, (mvp * model).toArray());
+        struct { float r, g, b; } colors[] = {
+            {1.0f, 0.0f, 0.0f}, // Red X
+            {0.0f, 1.0f, 0.0f}, // Green Y
+            {0.0f, 0.0f, 1.0f}  // Blue Z
+        };
+        for (int i = 0; i < 3; ++i) {
+            glUniform3f(uColorLocation, colors[i].r, colors[i].g, colors[i].b);
+            glDrawArrays(GL_LINES, i * 2, 2);
+        }
+    }
 
-    // Draw grid
-    glBindVertexArray(gridVAO);
-    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "uMVP"), 1, GL_FALSE, gridMVP.toArray());
-    glUniform3f(glGetUniformLocation(shaderProgram, "uColor"), 0.5f, 0.5f, 0.5f); // Gray grid
-    int numLines = static_cast<int>(camera.distance * 2.0f / (camera.distance / 10.0f));
-    glDrawArrays(GL_LINES, 0, 2 * (2 * numLines + 1) * 2);
+    if (renderGrid) {
+        glBindVertexArray(gridVAO);
+        glUniformMatrix4fv(uMVPLocation, 1, GL_FALSE, (mvp * model).toArray());
+        glUniform3f(uColorLocation, 0.5f, 0.5f, 0.5f); // Gray grid
+        glDrawArrays(GL_LINES, 0, 2 * (2 * gridLines + 1) * 2);
+    }
+
     glBindVertexArray(0);
-
     checkGLError("drawAxes");
 }
 

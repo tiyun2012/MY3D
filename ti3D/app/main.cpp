@@ -21,7 +21,7 @@ static void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
         cam->processMouseInput(window, xpos, ypos, deltaTime);
     }
 }
-}
+} // namespace Ti3D
 
 int main() {
     if (!glfwInit()) {
@@ -52,7 +52,8 @@ int main() {
     }
 
     Ti3D::Camera camera;
-    Ti3D::Renderer renderer;
+    camera.setAspectRatio(static_cast<float>(width), static_cast<float>(height));
+    Ti3D::Renderer renderer(2.0f, 20.0f, 10, 2.0f); // Initial axis length, grid size, lines, spacing
     glEnable(GL_DEPTH_TEST);
 
     glfwSetFramebufferSizeCallback(window, Ti3D::framebufferSizeCallback);
@@ -66,6 +67,36 @@ int main() {
         lastFrame = currentFrame;
 
         camera.processInput(window, deltaTime);
+
+        // Toggle rendering flags and adjust parameters
+        static float toggleCooldown = 0.0f;
+        toggleCooldown -= deltaTime;
+        if (toggleCooldown <= 0.0f) {
+            if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
+                renderer.setRenderFlags(!renderer.getRenderAxes(), renderer.getRenderGrid());
+                toggleCooldown = 0.2f;
+            }
+            if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
+                renderer.setRenderFlags(renderer.getRenderAxes(), !renderer.getRenderGrid());
+                toggleCooldown = 0.2f;
+            }
+            if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+                renderer.setAxisLength(renderer.getAxisLength() + 0.1f);
+                toggleCooldown = 0.2f;
+            }
+            if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+                renderer.setAxisLength(renderer.getAxisLength() - 0.1f);
+                toggleCooldown = 0.2f;
+            }
+            if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+                renderer.setGridParameters(renderer.getGridSize(), renderer.getGridLines() - 1, renderer.getGridSpacing());
+                toggleCooldown = 0.2f;
+            }
+            if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+                renderer.setGridParameters(renderer.getGridSize(), renderer.getGridLines() + 1, renderer.getGridSpacing());
+                toggleCooldown = 0.2f;
+            }
+        }
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
