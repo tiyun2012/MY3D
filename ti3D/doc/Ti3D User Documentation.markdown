@@ -1,310 +1,319 @@
-# Ti3D User Documentation
-
-## Overview
-Ti3D is a 3D visualization application built with OpenGL, GLFW, and GLAD. It features a camera system for viewing a 10x10 unit grid plane (in the XZ plane at Y=0) and colored coordinate axes (red X, green Y, blue Z) from multiple perspectives. The camera supports top, left, right, bottom, and far views, with zoom and pan functionality, centered on a movable target point.
-
-This document explains how to build, run, and use the Ti3D application, including system requirements, controls, and troubleshooting steps.
-
-## System Requirements
-- **Operating System**: Windows, Linux, or macOS
-- **Compiler**: C++17 compatible (e.g., MSVC, GCC, Clang)
-- **Dependencies**:
-  - CMake 3.10 or higher
-  - GLFW 3.4 (included in `ThirdParty/glfw-3.4/`)
-  - GLAD (included in `ThirdParty/gladLib/`)
-- **Development Environment**: Visual Studio Code (recommended) with CMake Tools extension
-- **Hardware**: OpenGL 3.3 compatible GPU
-
-## Project Structure
-The Ti3D project is organized as follows:
-```
-Ti3D/
-├── .vscode/
-│   ├── tasks.json        # VS Code build and run tasks
-├── app/
-│   ├── main.cpp         # Application entry point
-├── camera/
-│   ├── Camera.h         # Camera class definition
-├── renderer/
-│   ├── Renderer.h       # Renderer class for grid and axes
-│   ├── Renderer.cpp     # Renderer implementation (empty)
-├── TiMath/
-│   ├── Vector3.h/cpp    # 3D vector math
-│   ├── Quaternion.h/cpp # Quaternion math
-│   ├── Matrix4.h/cpp    # 4x4 matrix math
-├── ThirdParty/
-│   ├── glfw-3.4/        # GLFW library
-│   ├── gladLib/         # GLAD library
-├── CMakeLists.txt       # CMake build configuration
-```
-
-## Building the Application
-Follow these steps to build Ti3D using Visual Studio Code:
-
-1. **Clone or Extract the Project**:
-   - Ensure the project is in a directory (e.g., `C:/Users/pc/Desktop/Dev/ti3D/`).
-   - Verify that `ThirdParty/glfw-3.4/` and `ThirdParty/gladLib/` are present.
-
-2. **Open in VS Code**:
-   - Launch VS Code and open the `Ti3D/` folder (`File > Open Folder`).
-
-3. **Install CMake Tools Extension**:
-   - Go to the Extensions view (`Ctrl+Shift+X`) and install "CMake Tools" by Microsoft.
-
-4. **Configure the Build**:
-   - Open the Command Palette (`Ctrl+Shift+P`).
-   - Run `Tasks: Run Task` and select `CMake: Configure`.
-   - This creates a `build/` directory and configures the project using `CMakeLists.txt`.
-
-5. **Build the Project**:
-   - Run `Tasks: Run Task` and select `CMake: Build` (or press `Ctrl+Shift+B`).
-   - The build output is placed in `build/bin/` (e.g., `build/bin/Ti3D.exe` on Windows).
-
-6. **Troubleshooting Build Issues**:
-   - Ensure GLFW and GLAD paths in `CMakeLists.txt` match your system:
-     ```cmake
-     set(GLFW3_DIR "C:/Users/pc/Desktop/Dev/ti3D/ThirdParty/glfw-3.4")
-     set(GLAD_DIR "C:/Users/pc/Desktop/Dev/ti3D/ThirdParty/gladLib")
-     ```
-   - Check the Terminal panel for errors (e.g., missing libraries).
-   - If using a non-MSVC compiler, ensure `glfw` is installed (e.g., `sudo apt-get install libglfw3-dev` on Ubuntu).
-
-## Running the Application
-1. **Run via VS Code**:
-   - Run `Tasks: Run Task` and select `Run Ti3D`.
-   - Alternatively, try `Run Ti3D (Debug Fallback)` if the executable is in `build/Debug/`.
-
-2. **Run Manually**:
-   - Navigate to `build/bin/` in a terminal.
-   - Run `./Ti3D.exe` (Windows) or `./Ti3D` (Linux/macOS).
-
-3. **Troubleshooting Run Issues**:
-   - **Executable Not Found**:
-     - Run `Tasks: Run Task` > `Check Executable Path` to list `build/bin/` and `build/Debug/` contents.
-     - If `Ti3D.exe` is in `build/Debug/`, use the `Run Ti3D (Debug Fallback)` task.
-     - If elsewhere, update `.vscode/tasks.json`:
-       ```json
-       "command": "${workspaceFolder}/build/[correct_path]/Ti3D${command:cmake.buildProgramExtension}",
-       "options": { "cwd": "${workspaceFolder}/build/[correct_path]" }
-       ```
-   - **Permissions** (Linux/macOS):
-     - Run `chmod +x build/bin/Ti3D` or `chmod +x build/Debug/Ti3D`.
-   - **Dependencies**:
-     - Windows: Ensure GLFW DLLs (e.g., `glfw3.dll`) are in `build/bin/` or PATH.
-     - Linux/macOS: Run `ldd build/bin/Ti3D` to check for missing libraries.
-   - Check the Terminal for errors (e.g., "file not found") and share them for support.
-
-## Using the Application
-Ti3D displays a 10x10 unit grid plane (gray, in the XZ plane at Y=0) and coordinate axes (red X, green Y, blue Z) centered on a movable target point. The camera can switch between five views (Top, Left, Right, Bottom, Far), zoom in/out, and pan the target.
-
-### Controls
-- **View Mode Switching**:
-  - `T`: Switch to Top view (camera above, looking down Y-axis).
-  - `L`: Switch to Left view (camera left, looking along X-axis).
-  - `R`: Switch to Right view (camera right, looking along -X-axis).
-  - `B`: Switch to Bottom view (camera below, looking up Y-axis).
-  - `F`: Switch to Far view (camera far, looking along Z-axis).
-- **Zoom**:
-  - `+` or `Keypad +`: Zoom in (reduce distance, min 1.0 unit).
-  - `-` or `Keypad -`: Zoom out (increase distance).
-- **Pan**:
-  - `W`: Move target forward (negative Z).
-  - `S`: Move target backward (positive Z).
-  - `A`: Move target left (negative X).
-  - `D`: Move target right (positive X).
-- **Exit**:
-  - `Esc`: Close the application.
-
-### Camera Behavior
-- **Views**: The camera is positioned 10 units (default) from the target along the respective axis (e.g., Y=+10 for Top, X=-10 for Left). Each view is orthogonal, with no rotation.
-- **Zoom**: Adjusts the distance from the target (affects all views).
-- **Pan**: Moves the target in the XZ plane, keeping the grid and axes centered on it.
-- **Default View**: Top view on startup.
-
-### Visual Elements
-- **Grid Plane**: 10x10 units, gray, in the XZ plane (Y=0), with 1-unit spacing.
-- **Axes**:
-  - Red: Positive X-axis.
-  - Green: Positive Y-axis.
-  - Blue: Positive Z-axis.
-- **Background**: Black (RGB: 0, 0, 0).
-
-## Troubleshooting
-- **Application Doesn’t Start**:
-  - Verify the executable exists using the `Check Executable Path` task.
-  - Ensure GLFW and GLAD are correctly set up in `CMakeLists.txt`.
-  - Check for missing DLLs or libraries.
-- **Controls Don’t Work**:
-  - Ensure the window is focused.
-  - Verify key bindings in `Camera::processInput` in `camera/Camera.h`.
-- **Grid/Axes Not Visible**:
-  - Zoom in/out (`+/-`) to adjust the camera distance.
-  - Switch views (`T`, `L`, `R`, `B`, `F`) to ensure the target is in view.
-  - Check `renderer/Renderer.h` for correct rendering logic.
-
-## Extending the Application
-To add features, modify the following files:
-- **New Camera Controls**: Edit `Camera::processInput` in `camera/Camera.h`.
-- **Toggle Grid**: Add a boolean flag to `Renderer` and a key (e.g., `G`) in `app/main.cpp`.
-- **Add Objects**: Extend `Renderer::drawAxes` in `renderer/Renderer.h` to render new geometry.
-- **Debugging**: Create `.vscode/launch.json` for VS Code debugging (contact the developer for a sample).
-
-## Contact
-For issues or feature requests, contact the developer with:
-- Operating system (Windows, Linux, macOS).
-- Error messages from the Terminal.
-- Output of the `Check Executable Path` task.
-- Description of the problem or desired feature.
-
-*Last Updated: May 30, 2025*
-
-Using the Application (Updated)
-Ti3D displays a 10x10 unit grid plane (gray, in the XZ plane at Y=0) and coordinate axes (red X, green Y, blue Z) centered on a movable target point. The camera uses an orthographic projection for top, left, right, bottom, and far views, implemented via TiMath::Matrix4::orthographic, ensuring no perspective distortion. You can switch views, zoom, and pan to explore the scene.
-Controls
-
-View Mode Switching:
-T: Top view (above, looking down Y-axis).
-L: Left view (left, looking along X-axis).
-R: Right view (right, looking along -X-axis).
-B: Bottom view (below, looking up Y-axis).
-F: Far view (far, looking along Z-axis).
-
-
-Zoom:
-+ or Keypad +: Zoom in (reduce view size, min distance 1.0 unit).
-- or Keypad -: Zoom out (increase view size).
-
-
-Pan:
-W: Move target forward (negative Z).
-S: Move target backward (positive Z).
-A: Move target left (negative X).
-D: Move target right (positive X).
-
-
-Exit:
-Esc: Close the application.
-
-
-
-Camera Behavior
-
-Orthographic Views: Each view uses an orthographic projection, implemented in TiMath::Matrix4::orthographic. The view spans ±distance units vertically and ±distance * aspectRatio horizontally (default: ±10 vertically, ±13.33 horizontally at 4:3), showing the 10x10 grid plane without distortion.
-Zoom: Adjusts distance. Smaller values zoom in, larger values zoom out.
-Pan: Moves target in the XZ plane, keeping the grid and axes centered.
-Default View: Top view, with the grid plane fully visible.
-
-Last Updated: May 30, 2025
-
-Ti3D User Documentation
-Overview
-Ti3D is a 3D visualization tool built with C++, OpenGL 3.3, GLFW, and GLAD, displaying a 10x10 unit gray grid plane (XZ plane, Y=0) and coordinate axes (red X, green Y, blue Z) centered on a movable target. It offers perspective and orthographic views with Maya-like controls.
-Last Updated: May 30, 2025
-Features
-
-Scene: 10x10 unit grid plane (XZ, Y=0), gray; axes: red (X), green (Y), blue (Z).
-Camera Views: Perspective (60° FOV), Orthographic (Top, Left, Right, Bottom, Far).
-Controls: Tumble (Alt + LMB), track (Alt + MMB), dolly (Alt + RMB, wheel); keys: P, T, L, R, B, F, Alt + F, WASD, +/-.
-Platform: Windows (MSVC 2022); macOS/Linux possible.
-Build: CMake, VS Code tasks.
-
-System Requirements
-
-OS: Windows 10/11.
-Compiler: MSVC 2022, C++17.
-Dependencies: GLFW 3.4, GLAD (included).
-Tools: CMake 3.10+, VS Code (optional).
-Hardware: OpenGL 3.3 GPU.
-
-Installation and Setup
-
-Clone/Extract: C:/Users/pc/Desktop/Dev/ti3D.
-Dependencies: GLFW (ThirdParty/glfw3.4-3.4), GLAD (ThirdParty/gladLib).
-CMake:set(CMAKE_CXX_STANDARD 17)
-set(GLFW3_DIR "C:/Users/pc/Desktop/Dev/ti3D/ThirdParty/glfw3.4-3.4")
-set(GLAD_DIR "C:/Users/pc/Desktop/Dev/ti3D/ThirdParty/gladLib")
-
-
-
-Building
-
-VS Code:
-Tasks: Run Task > CMake: Configure.
-Tasks: Run Build Task (Ctrl+Shift+B).
-Output: build/bin/Debug/Ti3D.exe or build/Debug/Ti3D.exe.
-
-
-Manual:mkdir build
-cd build
-cmake -S .. -B .
-cmake --build . --config Debug
-
-
-
-Running
-
-VS Code: Tasks: Run Task > Run Ti3D or Run Ti3D (Debug Fallback).
-Manual: Run build/bin/Ti3D.exe or build/Debug/Ti3D.exe with glfw3.dll.
-Initial View: Perspective, grid visible, ~45° yaw/pitch.
-
-Controls
-
-View Switching: P (Perspective), T (Top), L (Left), R (Right), B (Bottom), F (Far).
-Mouse (with Alt):
-Alt + LMB: Tumble (perspective, smooth rotation around (0,0,0)).
-Alt + MMB: Track.
-Alt + RMB: Dolly.
-Wheel: Dolly.
-
-
-Keyboard: Alt + F (Frame), WASD (Pan), +/- (Zoom), Esc (Exit).
-
-Camera Behavior
-
-Perspective: 60° FOV, tumbles around (0,0,0) with slerp.
-Orthographic: ±distance height, ±distance*aspectRatio width; no tumbling.
-Tumbling: Alt + LMB, smooth, additive, cursor-driven.
-
-Troubleshooting
-
-Build:
-Quaternion::identity: Ensure Quaternion.h has static constexpr Quaternion identity().
-Quaternion::to_mat4: Not currently implemented; placeholder in Quaternion.h for future use (e.g., 3D model rendering).
-Verify CMakeLists.txt includes Quaternion.cpp, Matrix4.cpp.
-Clear IntelliSense: Ctrl+Shift+P, “C/C++: Reset IntelliSense Database”.
-
-
-Camera:
-Tumbling: Use perspective (P), cursor on grid; adjust rotateSpeed (2.0f).
-Raycasting: Debug getCursorWorldPoint with std::cout.
-
-
-Runtime:
-Check Ti3D.exe path: Tasks: Run Task > Check Executable Path.
-Ensure glfw3.dll.
-
-
-Share: OS, compiler, Quaternion.h, logs, screenshots.
-
-Version History
-
-May 30, 2025:
-Removed: Quaternion::toMatrix (not needed currently); added placeholder for to_mat4 (GLM-style) for future use.
-Fixed: Quaternion::identity() for Camera.h (IntelliSense error 980).
-Fixed: Camera.h syntax in getViewMatrix, getCursorWorldPoint, slerp.
-Added: Matrix4 16-float constructor, Quaternion::rotateVector.
-
-
-Previous: Initial orthographic camera, WASD, +/- zoom.
-
-Future Enhancements
-
-Dynamic placeA.
-Grid toggle.
-Wireframe/shaded modes.
-3D model loading (may require Quaternion::to_mat4).
-Cross-platform support.
-
-Contact
-Provide: version, OS, compiler, steps, logs, screenshots.
-
+# Ti3D Application Documentation
+
+## Project Status (June 2025)
+
+**Ti3D** is a modular C++ OpenGL application for 3D visualization and camera navigation, built with a custom math library (TiMath), GLAD for OpenGL loading, and GLFW for window/input management. The app features colored axes, a configurable XZ grid, and a debug point (TargetCamAim) that always faces the camera. The codebase is organized into Renderer, Camera, StateManager, and DebugPoint modules, with extensibility in mind.
+
+### Current Features
+
+- **Rendering:**  
+  - 3D axes (X: red, Y: green, Z: blue), adjustable length.
+  - XZ grid with customizable size, line count, and spacing.
+  - Debug point (TargetCamAim) as a red circle, always camera-facing.
+- **Camera System:**  
+  - Perspective and orthographic projections.
+  - Multiple view modes (Top, Left, Right, Bottom, Far).
+  - Keyboard and mouse controls for zoom, pan, and view switching.
+- **Input Handling:**  
+  - Hotkey-driven controls (DCC mode with Spacebar modifier).
+  - Context-aware input (Viewport mode via left-click).
+- **Math Library:**  
+  - Custom vector/matrix/quaternion operations for robust 3D math.
+- **Architecture:**  
+  - Modular: Renderer, Camera, StateManager, DebugPoint, TiMath.
+  - Designed for extensibility and experimentation.
+
+### Known Issues
+
+- **GLAD/GLFW Include Order:**  
+  - The project requires `<glad/glad.h>` to be included before any OpenGL or GLFW headers in all `.cpp` files.
+  - Do **not** include `<glad/glad.h>` in header files; only include it in source files, and always before `<GLFW/glfw3.h>`.
+  - Do **not** include `<GL/gl.h>` or `<GL/glu.h>` anywhere.
+  - See the "Resolving C1189 Error" section below for details.
+
+- **Build System:**  
+  - Visual Studio project (`Ti3D.vcxproj`).
+  - Requires GLAD and GLFW include/library paths set up correctly.
+
+### Architecture Overview
+
+- **Renderer:** Handles OpenGL setup and drawing of axes, grid, and debug point.
+- **DebugPoint:** Renders a camera-facing circle for visual debugging.
+- **Camera:** Manages view/projection matrices and user navigation.
+- **StateManager:** Handles input context, hotkeys, and app mode.
+- **TiMath:** Provides vector, matrix, and quaternion math utilities.
+
+### Usage
+
+- **Controls:**  
+  - `Esc`: Exit
+  - `P`: Toggle projection mode
+  - `T/L/R/B/F`: Switch camera views
+  - `=/-`: Zoom
+  - `W/A/S/D`: Pan
+  - `Space` + hotkeys: Toggle axes/grid, adjust grid, switch views
+  - `Tab` + hotkeys: Switch app mode
+
+- **Build:**  
+  - Open `Ti3D.vcxproj` in Visual Studio.
+  - Ensure GLAD and GLFW are included and linked.
+  - Clean and rebuild if you encounter include order errors.
+
+### Troubleshooting
+
+- **C1189 Error (OpenGL header already included):**
+  - Ensure `<glad/glad.h>` is included only in `.cpp` files, and always before `<GLFW/glfw3.h>`.
+  - Remove any `<glad/glad.h>` from headers.
+  - Remove any `<GL/gl.h>` or `<GL/glu.h>` includes.
+  - Clean and rebuild the solution.
+
+---
+
+For more details, see the full documentation below.
+
+---
+
+# Ti3D Application Documentation
+
+## Introduction
+
+Ti3D is a 3D visualization and interaction application developed in C++ using OpenGL for rendering. It provides a lightweight environment for viewing a 3D coordinate system, including colored axes (X: red, Y: green, Z: blue), a customizable grid in the XZ plane, and a debug point (TargetCamAim) visualized as a red circle. The application supports two modes: DCC (Digital Content Creation) for scene manipulation and Engine (placeholder for future game-like functionality). Users can control the camera, toggle rendering options, and adjust the grid via hotkeys.
+The primary goal of Ti3D is to serve as a foundation for 3D graphics experimentation, with a focus on camera navigation, rendering basic primitives, and extensible input handling.
+
+## Features
+
+- **Rendering:**  
+  - Coordinate axes (X: red, Y: green, Z: blue) with configurable length (default: 2 units).
+  - XZ grid with adjustable size (default: 20 units), number of lines (default: 10), and spacing (default: 2 units).
+  - Debug point (TargetCamAim) rendered as a red circle, always facing the camera, with a radius of 6 units.
+- **Camera System:**  
+  - Supports Perspective and Orthographic projections.
+  - Multiple view modes: Top, Left, Right, Bottom, and Far (default perspective view).
+  - Camera controls: zoom (via +/- keys), pan (WASD or mouse drag), and focus on the debug point (F key in Viewport context).
+  - Adjustable field of view, distance (1 to 1000 units), and aspect ratio.
+- **Input Handling:**  
+  - Hotkey-driven controls in DCC mode (with Spacebar as modifier):
+    - Toggle axes (Space+A) and grid (Space+G).
+    - Adjust grid size (Space+Q to increase, Space+E to decrease).
+    - Adjust grid lines (Space+Z to increase, Space+Z to decrease).
+    - Switch camera views (Space+1 to Space+6 for Perspective, Front, Left, Top, Back, Right).
+  - Mode switching** (Tab+G for Engine, Tab+N for DCC).
+  - Context-aware input (Viewport mode activated by left-click).
+- **Math Library:**  
+  - Custom TiMath library for vector (Vector2, Vector3, Vector4) operations, including dot/cross products, normalization, rotation, and projection.
+  - Matrix operations (via Matrix4, assumed available) for transformations and camera matrices.
+- **Extensibility:**  
+  - Modular design with separate Renderer, Camera, and StateManager classes.
+  - Placeholder for Engine mode to add game-like features in the future.
+
+## Architecture
+
+Ti3D is structured around the following components:
+
+1. **Renderer (Renderer.h, Renderer.cpp)**
+
+   - **Purpose:** Handles OpenGL rendering of axes, grid, and the debug point.
+   - **Key Functions:**
+     - `initialize()`: Sets up vertex arrays (VAOs), buffers (VBOs), and shaders for axes and grid.
+     - `draw()`: Renders axes, grid, and TargetCamAim based on camera matrices and render flags.
+     - `setRenderFlags(bool axes, bool grid)`: Toggles visibility of axes and grid.
+     - `increaseGridSize(), decreaseGridSize(), increaseGridLines(), decreaseGridLines()`: Adjusts grid parameters.
+
+   - **Details:**
+     - Uses GLAD for OpenGL functions.
+     - Axes are drawn as colored lines (6 vertices, 3 lines for X, Y, Z).
+     - Grid is a set of XZ-plane lines, dynamically generated based on gridLines, gridSpacing, and gridSize.
+     - TargetCamAim is a DebugPoint object, initialized at (0,0,0) with a radius of 0.5 units.
+
+2. **DebugPoint (DebugPoint.h, DebugPoint.cpp)**
+
+   - **Purpose:** Renders a 2D circle (red) that always faces the camera, used as TargetCamAim.
+   - **Key Functions:**
+     - `initialize()`: Creates a unit circle (32 segments) with vertex data for a triangle fan.
+     - `render()`: Draws the circle using a model matrix to orient it toward the camera and position it.
+
+   - **Details:**
+     - Uses OpenGL shaders to render a red circle.
+     - Camera-facing orientation computed using the inverse view matrix and cross products.
+
+3. **Camera (Camera.h, Camera.cpp)**
+
+   - **Purpose:** Manages the view and projection matrices for rendering.
+   - **Key Functions:**
+     - `processInput()`: Handles keyboard inputs for zooming, panning, and mode switching.
+     - `processMouseInput()`: Supports mouse-based panning (left-click drag).
+     - `getViewMatrix()`: Computes the view matrix based on view mode and target position.
+     - `getProjectionMatrix()`: Returns perspective or orthographic projection matrix.
+     - `focusOn()`: Sets the camera to focus on a point (e.g., TargetCamAim).
+
+   - **Details:**
+     - Supports Perspective (60° FOV) and Orthographic projections.
+     - View modes adjust camera orientation (e.g., Top view looks down Y-axis).
+     - Input is suppressed in DCC mode when Spacebar is pressed to prioritize hotkeys.
+
+4. **StateManager (StateManager.h, StateManager.cpp)**
+
+   - **Purpose:** Manages application state, input contexts, and hotkeys.
+   - **Key Functions:**
+     - `processHotkeys()`: Executes hotkey actions (e.g., toggle axes, switch modes) with a cooldown.
+     - `updateMouseClickState()`: Sets Viewport context on left-click and handles focus (F key).
+     - `updateCameraInput()`: Processes mouse and keyboard inputs for camera control.
+     - `setMode()`: Switches between DCC and Engine modes.
+
+   - **Details:**
+     - DCC mode uses Spacebar-modified hotkeys for rendering and camera controls.
+     - Engine mode is a placeholder with no hotkeys defined.
+     - Contexts (Viewport, Timeline) determine input behavior.
+
+5. **TiMath Library (Vector2.h, Vector2.cpp, Vector3.h, Vector3.cpp, Vector4.h, Vector4.cpp, TiMathConfig.h)**
+
+   - **Purpose:** Provides mathematical utilities for 3D graphics.
+   - **Components:**
+     - `Vector2`: 2D vector with operations (dot, cross, normalize, rotate).
+     - `Vector3`: 3D vector with operations (dot, cross, normalize, rotate, reflect, project).
+     - `Vector4`: 4D vector with homogeneous coordinate support (e.g., homogeneousDivide()).
+     - `TiMathConfig`: Defines constants (EPSILON, PI) and matrix order (TIMATH_COLUMN_MAJOR).
+
+   - **Details:**
+     - Optimized for robustness with epsilon-based checks for zero division and normalization.
+     - Supports SSE (via USE_SSE define) for potential performance gains.
+     - Used extensively in Camera, Renderer, and DebugPoint for transformations.
+
+6. **Main Application (main.cpp)**
+
+   - **Purpose:** Initializes GLFW, GLAD, and core components, and runs the main loop.
+   - **Key Functions:**
+     - Sets up a GLFW window (800x600, OpenGL 3.3 core profile).
+     - Initializes CameraManager, Renderer, and StateManager.
+     - Handles window resizing and mouse input via callbacks.
+     - Runs the render loop, processing inputs and drawing the scene.
+
+   - **Details:**
+     - Enables depth testing for correct 3D rendering.
+     - Clears the screen to black before each frame.
+
+## Dependencies
+
+- **External Libraries:**
+  - GLAD: OpenGL loader (ThirdParty/gladLib/include/glad/glad.h).
+  - GLFW: Window and input management (GLFW/glfw3.h).
+
+- **Internal Libraries:**
+  - TiMath: Custom math library for vectors and matrices.
+  - CameraManager: Assumed header (CameraManager.h) for managing camera instances.
+
+- **Standard C++ Libraries:**
+  - `<iostream>`, `<vector>`, `<cmath>`, `<algorithm>`, `<functional>`, `<string>`, `<map>`.
+
+## Controls
+
+- **Keyboard**
+
+  - **General:**
+    - `Esc`: Close the application.
+    - `P`: Toggle between Perspective and Orthographic projections.
+    - `T`: Switch to Top view.
+    - `L`: Switch to Left view.
+    - `R`: Switch to Right view.
+    - `B`: Switch to Bottom view.
+    - `F`: Switch to Far view or focus on TargetCamAim (in Viewport context).
+    - `=`, `+`: Zoom in.
+    - `-`, `_`: Zoom out.
+    - `W`, `A`, `S`, `D`: Pan camera (direction depends on view mode).
+
+  - **DCC Mode Hotkeys (with Space held):**
+    - `A`: Toggle axes visibility.
+    - `G`: Toggle grid visibility.
+    - `Q`: Increase grid size by 1 unit.
+    - `E`: Decrease grid size by 1 unit.
+    - `Z`: Increase grid lines by 1.
+    - `X`: Decrease grid lines by 1.
+    - `1` to `6`: Switch camera to Perspective, Front, Left, Top, Back, or Right view.
+
+  - **Mode Switching (with Tab held):**
+    - `G`: Switch to Engine mode.
+    - `N`: Switch to DCC mode.
+
+- **Mouse**
+
+  - `Left-click`: Set Viewport context.
+  - `Left-click + drag`: Pan the camera (scaled by distance).
+
+## Build Instructions
+
+- **Prerequisites**
+
+  - **Compiler:** C++11 or later (e.g., MSVC, GCC, Clang).
+  - **Libraries:**
+    - GLAD: Include ThirdParty/gladLib/include in include paths.
+    - GLFW: Link against GLFW library and include its headers.
+
+  - **Build System:** Visual Studio with Ti3D.vcxproj.
+
+- **Resolving C1189 Error**
+  The C1189 error (OpenGL header already included) occurs due to include order conflicts between `<glad/glad.h>` and `<GLFW/glfw3.h>`. To resolve:
+
+  - **Ensure Correct Include Order:**
+
+    In .cpp files (main.cpp, Renderer.cpp, DebugPoint.cpp), include `<glad/glad.h>` before any headers that include `<GLFW/glfw3.h>` (e.g., Camera.h, StateManager.h).
+    Example:
+    ```cpp
+    #include <glad/glad.h>
+    #include "Renderer.h"
+    #include <GLFW/glfw3.h>
+    ```
+
+  - **Remove `<glad/glad.h>` from Headers:**
+
+    Renderer.h uses a type alias (using GLuint = unsigned int;) instead of including `<glad/glad.h>`.
+    Avoid including `<glad/glad.h>` in other headers (Camera.h, StateManager.h, DebugPoint.h).
+
+  - **Check Unshared Files:**
+
+    Verify CameraManager.h does not include `<GL/gl.h>` or `<glad/glad.h>` unnecessarily.
+    Example CameraManager.h:
+    ```cpp
+    #ifndef CAMERAMANAGER_H
+    #define CAMERAMANAGER_H
+    #include "Camera.h"
+    class CameraManager {
+    public:
+        Camera& getActiveCamera();
+        void switchTo(int view);
+    private:
+        Camera camera;
+    };
+    #endif
+    ```
+
+  - **Update Build Configuration:**
+
+    In Ti3D.vcxproj, ensure include paths include ThirdParty/gladLib/include.
+    Remove any forced includes of `<GL/gl.h>` (Properties > C/C++ > Advanced > Forced Include File).
+    Link against GLFW and OpenGL libraries.
+
+  - **Clean and Rebuild:**
+
+    Delete the build/ directory.
+    Rebuild the project with Ti3D.vcxproj.
+
+- **Compilation**
+
+  Use Visual Studio to open Ti3D.vcxproj.
+  Set the configuration to Debug or Release.
+  Build the solution, ensuring GLAD and GLFW are correctly linked.
+  Run the executable to verify rendering and controls.
+
+## Future Improvements
+
+- Engine Mode: Implement hotkeys and functionality for Engine mode (e.g., game-like interactions).
+- Scene Objects: Add support for rendering 3D models or additional primitives (e.g., cubes, spheres).
+- UI: Integrate a graphical interface (e.g., ImGui) for settings and controls.
+- Performance: Optimize rendering with instancing or batching for complex scenes.
+- Error Handling: Enhance shader compilation error logs and add runtime OpenGL error checks.
+- Documentation: Add inline comments and Doxygen tags for better code maintainability.
+- CameraManager: Fully implement CameraManager to support multiple cameras and smooth transitions.
+
+## Conclusion
+
+Ti3D is a robust foundation for 3D graphics applications, with a clean separation of concerns between rendering, input handling, and math utilities. By resolving the C1189 error and expanding its features, Ti3D can serve as a versatile tool for 3D visualization and development. For further assistance, share CameraManager.h or build logs if compilation issues persist.
