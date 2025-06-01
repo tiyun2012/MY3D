@@ -1,7 +1,9 @@
 #include <glad/glad.h>
+#include <GLFW/glfw3.h> // GLFW after GLAD
+
 #include "../camera/CameraManager.h"
 #include "../renderer/Renderer.h"
-#include "StateManager.h"
+#include "../app/StateManager.h"
 #include <iostream>
 
 namespace Ti3D {
@@ -55,7 +57,7 @@ int main() {
 
     Ti3D::CameraManager cameraManager;
     cameraManager.getActiveCamera().setAspectRatio(static_cast<float>(width), static_cast<float>(height));
-    Ti3D::Renderer renderer(2.0f, 20.0f, 10, 2.0f); // Initial axis length, grid size, lines, spacing
+    Ti3D::Renderer renderer(2.0f, 20.0f, 10, 2.0f);
     Ti3D::StateManager stateManager;
     stateManager.setCameraManager(&cameraManager);
     glEnable(GL_DEPTH_TEST);
@@ -73,17 +75,14 @@ int main() {
         float deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        // Update state, process hotkeys, and check mouse click state
         stateManager.updateHotkeyStates(window, deltaTime);
         stateManager.processHotkeys(window, renderer);
         stateManager.updateMouseClickState(window);
 
-        // Update camera input
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
         stateManager.updateCameraInput(window, xpos, ypos);
 
-        // Process camera movement, suppressing in DCC mode when Spacebar is pressed
         cameraManager.getActiveCamera().processInput(window, deltaTime, stateManager.getMode() == Ti3D::AppMode::DCC, stateManager.isSpacebarPressed());
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -91,8 +90,8 @@ int main() {
 
         renderer.drawAxes(cameraManager.getActiveCamera(), stateManager);
         renderer.drawGrid(cameraManager.getActiveCamera(), stateManager);
+        stateManager.getTargetCamAim().draw(cameraManager.getActiveCamera());
 
-        // Reset CameraUpdate after rendering
         stateManager.resetCameraUpdate();
 
         glfwSwapBuffers(window);
