@@ -1,6 +1,9 @@
 #include "../camera/Camera.h"
 #include "../renderer/Renderer.h"
 #include <iostream>
+#include <functional>
+#include <vector>
+#include <map>
 
 namespace Ti3D {
 static void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
@@ -60,6 +63,50 @@ int main() {
     glfwSetCursorPosCallback(window, Ti3D::mouseCallback);
     glfwSetWindowUserPointer(window, &camera);
 
+    // Map for special key names
+    static const std::map<int, std::string> specialKeyNames = {
+        { GLFW_KEY_UP, "Up" },
+        { GLFW_KEY_DOWN, "Down" },
+        { GLFW_KEY_LEFT, "Left" },
+        { GLFW_KEY_RIGHT, "Right" }
+    };
+
+    // Hotkey table
+    struct Hotkey {
+        int key; // GLFW key code
+        std::string description; // Action description
+        std::function<void(Ti3D::Renderer&)> action; // Callback function
+    };
+    std::vector<Hotkey> hotkeys = {
+        { GLFW_KEY_1, "Toggle axes visibility",
+          [&renderer](Ti3D::Renderer& r) { r.setRenderFlags(!r.getRenderAxes(), r.getRenderGrid()); } },
+        { GLFW_KEY_2, "Toggle grid visibility",
+          [&renderer](Ti3D::Renderer& r) { r.setRenderFlags(r.getRenderAxes(), !r.getRenderGrid()); } },
+        { GLFW_KEY_UP, "Increase axis length",
+          [&renderer](Ti3D::Renderer& r) { r.setAxisLength(r.getAxisLength() + 0.1f); } },
+        { GLFW_KEY_DOWN, "Decrease axis length",
+          [&renderer](Ti3D::Renderer& r) { r.setAxisLength(r.getAxisLength() - 0.1f); } },
+        { GLFW_KEY_LEFT, "Decrease grid lines",
+          [&renderer](Ti3D::Renderer& r) { r.setGridParameters(r.getGridSize(), r.getGridLines() - 1, r.getGridSpacing()); } },
+        { GLFW_KEY_RIGHT, "Increase grid lines",
+          [&renderer](Ti3D::Renderer& r) { r.setGridParameters(r.getGridSize(), r.getGridLines() + 1, r.getGridSpacing()); } }
+    };
+
+    // Print hotkey table for user reference
+    std::cout << "Hotkeys:\n";
+    for (const auto& hotkey : hotkeys) {
+        const char* keyName = glfwGetKeyName(hotkey.key, 0);
+        std::string displayName;
+        if (keyName) {
+            displayName = keyName;
+        } else {
+            auto it = specialKeyNames.find(hotkey.key);
+            displayName = (it != specialKeyNames.end()) ? it->second : "Unknown";
+        }
+        std::cout << "Key " << displayName << ": " << hotkey.description << "\n";
+    }
+    std::cout << std::endl;
+
     float lastFrame = static_cast<float>(glfwGetTime());
     while (!glfwWindowShouldClose(window)) {
         float currentFrame = static_cast<float>(glfwGetTime());
@@ -68,33 +115,16 @@ int main() {
 
         camera.processInput(window, deltaTime);
 
-        // Toggle rendering flags and adjust parameters
+        // Process hotkeys
         static float toggleCooldown = 0.0f;
         toggleCooldown -= deltaTime;
         if (toggleCooldown <= 0.0f) {
-            if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
-                renderer.setRenderFlags(!renderer.getRenderAxes(), renderer.getRenderGrid());
-                toggleCooldown = 0.2f;
-            }
-            if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
-                renderer.setRenderFlags(renderer.getRenderAxes(), !renderer.getRenderGrid());
-                toggleCooldown = 0.2f;
-            }
-            if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-                renderer.setAxisLength(renderer.getAxisLength() + 0.1f);
-                toggleCooldown = 0.2f;
-            }
-            if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-                renderer.setAxisLength(renderer.getAxisLength() - 0.1f);
-                toggleCooldown = 0.2f;
-            }
-            if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-                renderer.setGridParameters(renderer.getGridSize(), renderer.getGridLines() - 1, renderer.getGridSpacing());
-                toggleCooldown = 0.2f;
-            }
-            if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-                renderer.setGridParameters(renderer.getGridSize(), renderer.getGridLines() + 1, renderer.getGridSpacing());
-                toggleCooldown = 0.2f;
+            for (const auto& hotkey : hotkeys) {
+                if (glfwGetKey(window, hotkey.key) == GLFW_PRESS) {
+                    hotkey.action(renderer);
+                    toggleCooldown = 0.2f;
+                    break; // Prevent multiple actions per frame
+                }
             }
         }
 
