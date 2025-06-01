@@ -1,3 +1,4 @@
+#include <glad/glad.h>
 #include "../camera/Camera.h"
 #include "../renderer/Renderer.h"
 #include "StateManager.h"
@@ -62,15 +63,24 @@ int main() {
     glfwSetCursorPosCallback(window, Ti3D::mouseCallback);
     glfwSetWindowUserPointer(window, &camera);
 
+    double lastX = 0.0, lastY = 0.0;
+    glfwGetCursorPos(window, &lastX, &lastY);
+
     float lastFrame = static_cast<float>(glfwGetTime());
     while (!glfwWindowShouldClose(window)) {
         float currentFrame = static_cast<float>(glfwGetTime());
         float deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        // Update state and process hotkeys
+        // Update state, process hotkeys, and check mouse click state
         stateManager.updateHotkeyStates(window, deltaTime);
         stateManager.processHotkeys(window, renderer);
+        stateManager.updateMouseClickState(window);
+
+        // Update camera input
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+        stateManager.updateCameraInput(window, xpos, ypos);
 
         // Process camera movement, suppressing in DCC mode when Spacebar is pressed
         camera.processInput(window, deltaTime, stateManager.getMode() == Ti3D::AppMode::DCC, stateManager.isSpacebarPressed());
@@ -78,8 +88,11 @@ int main() {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        renderer.drawAxes(camera);
-        renderer.drawGrid(camera);
+        renderer.drawAxes(camera, stateManager);
+        renderer.drawGrid(camera, stateManager);
+
+        // Reset CameraUpdate after rendering
+        stateManager.resetCameraUpdate();
 
         glfwSwapBuffers(window);
         glfwPollEvents();

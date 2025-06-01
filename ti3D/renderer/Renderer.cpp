@@ -1,5 +1,7 @@
+#include <glad/glad.h>
 #include "Renderer.h"
 #include "../TiMath/Vector3.h"
+#include "../app/StateManager.h"
 #include <vector>
 #include <string>
 #include <iostream>
@@ -181,7 +183,7 @@ void Renderer::initGrid() {
     glBindVertexArray(0);
 }
 
-void Renderer::drawAxes(const Camera& camera) {
+void Renderer::drawAxes(const Camera& camera, const StateManager& stateManager) {
     if (!renderAxes) return;
     glUseProgram(axisShaderProgram);
     glBindVertexArray(axisVAO);
@@ -194,19 +196,24 @@ void Renderer::drawAxes(const Camera& camera) {
         glBindVertexArray(0);
         return;
     }
+    if (stateManager.isCameraUpdated()) {
+        // Debug: Log matrix values
+        std::cout << "// Debug: Log matrix values (Axes view): ";
+        for (int i = 0; i < 16; ++i) std::cout << view.data()[i] << " ";
+        std::cout << "\n";
+        std::cout << "// Debug: Log matrix values (Axes projection): ";
+        for (int i = 0; i < 16; ++i) std::cout << projection.data()[i] << " ";
+        std::cout << "\n";
+    }
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, view.data());
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, projection.data());
     checkGLError("After setting axis uniforms");
-    // Debug: Log matrix values
-    std::cout << "Axis view matrix: ";
-    for (int i = 0; i < 16; ++i) std::cout << view.data()[i] << " ";
-    std::cout << "\n";
     glDrawArrays(GL_LINES, 0, 6); // X, Y, Z axes (2 vertices each)
     checkGLError("After drawing axes");
     glBindVertexArray(0);
 }
 
-void Renderer::drawGrid(const Camera& camera) {
+void Renderer::drawGrid(const Camera& camera, const StateManager& stateManager) {
     if (!renderGrid) return;
     glUseProgram(gridShaderProgram);
     glBindVertexArray(gridVAO);
@@ -219,14 +226,18 @@ void Renderer::drawGrid(const Camera& camera) {
         glBindVertexArray(0);
         return;
     }
+    if (stateManager.isCameraUpdated()) {
+        // Debug: Log matrix values
+        std::cout << "// Debug: Log matrix values (Grid view): ";
+        for (int i = 0; i < 16; ++i) std::cout << view.data()[i] << " ";
+        std::cout << "\n";
+        std::cout << "// Debug: Log matrix values (Grid projection): ";
+        for (int i = 0; i < 16; ++i) std::cout << projection.data()[i] << " ";
+        std::cout << "\n";
+    }
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, view.data());
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, projection.data());
     checkGLError("After setting grid uniforms");
-    // Debug: Log matrix values
-    std::cout << "Grid view matrix: ";
-    for (int i = 0; i < 16; ++i) std::cout << view.data()[i] << " ";
-    std::cout << "\n";
-    // Total vertices: (2 * (2 * gridLines + 1)) for X-lines + (2 * (2 * gridLines + 1)) for Z-lines
     glDrawArrays(GL_LINES, 0, 4 * (2 * gridLines + 1));
     checkGLError("After drawing grid");
     glBindVertexArray(0);

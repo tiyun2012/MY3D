@@ -1,4 +1,6 @@
 #include "StateManager.h"
+#include "Renderer.h"
+#include <GLFW/glfw3.h> // Added for GLFW constants and types
 #include <iostream>
 
 namespace Ti3D {
@@ -23,7 +25,8 @@ const std::map<int, std::string> StateManager::specialKeyNames = {
 };
 
 StateManager::StateManager()
-    : currentMode(AppMode::DCC), spacebarPressed(false), hotkeyCooldown(0.0f), modeCooldown(0.0f) {
+    : currentMode(AppMode::DCC), spacebarPressed(false), hotkeyCooldown(0.0f), 
+      modeCooldown(0.0f), currentContext(ContextType::None), cameraUpdate(false) {
     // DCC Mode hotkeys
     dccHotkeys = {
         { GLFW_KEY_A, "Space + A: Toggle axes visibility",
@@ -99,6 +102,84 @@ void StateManager::processHotkeys(GLFWwindow* window, Renderer& renderer) {
             }
         }
     }
+}
+
+void StateManager::updateMouseClickState(GLFWwindow* window) {
+    static bool lastLeftClickState = false;
+    bool currentLeftClickState = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
+
+    if (currentLeftClickState && !lastLeftClickState) {
+        // Left click pressed: set to Viewport context
+        currentContext = ContextType::Viewport;
+        std::cout << "Context set to Viewport (1)\n";
+    } else if (!currentLeftClickState && lastLeftClickState) {
+        // Left click released: no change to context
+    }
+
+    lastLeftClickState = currentLeftClickState;
+
+    // Check movement keys and print actions if in Viewport context
+    if (currentContext == ContextType::Viewport) {
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+            std::cout << "Camera moving forward\n";
+            cameraUpdate = true;
+        }
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+            std::cout << "Camera moving backward\n";
+            cameraUpdate = true;
+        }
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+            std::cout << "Camera moving left\n";
+            cameraUpdate = true;
+        }
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+            std::cout << "Camera moving right\n";
+            cameraUpdate = true;
+        }
+    }
+}
+
+void StateManager::updateCameraInput(GLFWwindow* window, double xpos, double ypos) {
+    static double lastX = xpos, lastY = ypos;
+    static bool lastPState = false;
+    static bool lastZoomState = false;
+
+    // View mode switches
+    if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS ||
+        glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS ||
+        glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS ||
+        glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS ||
+        glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
+        cameraUpdate = true;
+    }
+
+    // Projection toggle
+    bool currentPState = (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS);
+    if (currentPState && !lastPState) {
+        cameraUpdate = true;
+    }
+    lastPState = currentPState;
+
+    // Zoom
+    bool currentZoomState = (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS ||
+                             glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS ||
+                             glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS ||
+                             glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS);
+    if (currentZoomState && !lastZoomState) {
+        cameraUpdate = true;
+    }
+    lastZoomState = currentZoomState;
+
+    // Mouse panning
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+        float deltaX = static_cast<float>(xpos - lastX);
+        float deltaY = static_cast<float>(ypos - lastY);
+        if (deltaX != 0.0f || deltaY != 0.0f) {
+            cameraUpdate = true;
+        }
+    }
+    lastX = xpos;
+    lastY = ypos;
 }
 
 void StateManager::printControls() const {

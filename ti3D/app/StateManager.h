@@ -1,15 +1,24 @@
 #ifndef STATEMANAGER_H
 #define STATEMANAGER_H
 
-#include "../renderer/Renderer.h"
 #include <functional>
 #include <vector>
 #include <string>
 #include <map>
+#include <GLFW/glfw3.h>
 
 namespace Ti3D {
 
 enum class AppMode { DCC, Engine };
+
+enum class ContextType {
+    None = 0,     // No context
+    Viewport = 1, // Viewport context
+    Timeline = 2  // Timeline context (placeholder for future)
+};
+
+// Forward declaration of Renderer
+class Renderer;
 
 class StateManager {
 public:
@@ -32,11 +41,25 @@ public:
     
     void printControls() const;
 
+    // Update mouse click state and process movement keys based on context
+    void updateMouseClickState(GLFWwindow* window);
+
+    // Process camera input and set CameraUpdate
+    void updateCameraInput(GLFWwindow* window, double xpos, double ypos);
+
+    // Getter for CameraUpdate
+    bool isCameraUpdated() const { return cameraUpdate; }
+
+    // Reset CameraUpdate after processing
+    void resetCameraUpdate() { cameraUpdate = false; }
+
 private:
     AppMode currentMode;
     bool spacebarPressed;
     float hotkeyCooldown;
     float modeCooldown;
+    ContextType currentContext;
+    bool cameraUpdate; // Tracks if camera state changed
     
     std::vector<Hotkey> dccHotkeys;
     std::vector<Hotkey> engineHotkeys;
