@@ -63,49 +63,79 @@ int main() {
     glfwSetCursorPosCallback(window, Ti3D::mouseCallback);
     glfwSetWindowUserPointer(window, &camera);
 
+    // Application modes
+    enum class AppMode { DCC, Engine };
+    AppMode currentMode = AppMode::DCC;
+
     // Map for special key names
     static const std::map<int, std::string> specialKeyNames = {
+        { GLFW_KEY_SPACE, "Space" },
+        { GLFW_KEY_TAB, "Tab" },
         { GLFW_KEY_UP, "Up" },
         { GLFW_KEY_DOWN, "Down" },
         { GLFW_KEY_LEFT, "Left" },
-        { GLFW_KEY_RIGHT, "Right" }
+        { GLFW_KEY_RIGHT, "Right" },
+        { GLFW_KEY_W, "W" },
+        { GLFW_KEY_A, "A" },
+        { GLFW_KEY_S, "S" },
+        { GLFW_KEY_D, "D" },
+        { GLFW_KEY_G, "G" },
+        { GLFW_KEY_N, "N" }
     };
 
     // Hotkey table
     struct Hotkey {
-        int key; // GLFW key code
+        int key; // GLFW key code (requires modifier)
         std::string description; // Action description
         std::function<void(Ti3D::Renderer&)> action; // Callback function
+        int modifier; // Modifier key (e.g., GLFW_KEY_SPACE, GLFW_KEY_TAB)
     };
-    std::vector<Hotkey> hotkeys = {
-        { GLFW_KEY_1, "Toggle axes visibility",
-          [&renderer](Ti3D::Renderer& r) { r.setRenderFlags(!r.getRenderAxes(), r.getRenderGrid()); } },
-        { GLFW_KEY_2, "Toggle grid visibility",
-          [&renderer](Ti3D::Renderer& r) { r.setRenderFlags(r.getRenderAxes(), !r.getRenderGrid()); } },
-        { GLFW_KEY_UP, "Increase axis length",
-          [&renderer](Ti3D::Renderer& r) { r.setAxisLength(r.getAxisLength() + 0.1f); } },
-        { GLFW_KEY_DOWN, "Decrease axis length",
-          [&renderer](Ti3D::Renderer& r) { r.setAxisLength(r.getAxisLength() - 0.1f); } },
-        { GLFW_KEY_LEFT, "Decrease grid lines",
-          [&renderer](Ti3D::Renderer& r) { r.setGridParameters(r.getGridSize(), r.getGridLines() - 1, r.getGridSpacing()); } },
-        { GLFW_KEY_RIGHT, "Increase grid lines",
-          [&renderer](Ti3D::Renderer& r) { r.setGridParameters(r.getGridSize(), r.getGridLines() + 1, r.getGridSpacing()); } }
+    // DCC Mode hotkeys
+    std::vector<Hotkey> dccHotkeys = {
+        { GLFW_KEY_A, "Space + A: Toggle axes visibility",
+          [&renderer](Ti3D::Renderer& r) { r.setRenderFlags(!r.getRenderAxes(), r.getRenderGrid()); },
+          GLFW_KEY_SPACE },
+        { GLFW_KEY_G, "Space + G: Toggle grid visibility",
+          [&renderer](Ti3D::Renderer& r) { r.setRenderFlags(r.getRenderAxes(), !r.getRenderGrid()); },
+          GLFW_KEY_SPACE }
+    };
+    // Engine Mode hotkeys (placeholder for future design)
+    std::vector<Hotkey> engineHotkeys = {
+        // Add Engine Mode hotkeys here later
+    };
+    // Mode switching hotkeys
+    std::vector<Hotkey> modeHotkeys = {
+        { GLFW_KEY_G, "Tab + G: Switch to Engine Mode",
+          [&currentMode](Ti3D::Renderer&) { currentMode = AppMode::Engine; },
+          GLFW_KEY_TAB },
+        { GLFW_KEY_N, "Tab + N: Switch to DCC Mode",
+          [&currentMode](Ti3D::Renderer&) { currentMode = AppMode::DCC; },
+          GLFW_KEY_TAB }
     };
 
-    // Print hotkey table for user reference
-    std::cout << "Hotkeys:\n";
-    for (const auto& hotkey : hotkeys) {
-        const char* keyName = glfwGetKeyName(hotkey.key, 0);
-        std::string displayName;
-        if (keyName) {
-            displayName = keyName;
-        } else {
-            auto it = specialKeyNames.find(hotkey.key);
-            displayName = (it != specialKeyNames.end()) ? it->second : "Unknown";
+    // Function to print controls based on mode
+    auto printControls = [&](AppMode mode) {
+        std::cout << "Current Mode: " << (mode == AppMode::DCC ? "DCC" : "Engine") << "\n";
+        std::cout << "Controls:\n";
+        const auto& hotkeys = (mode == AppMode::DCC) ? dccHotkeys : engineHotkeys;
+        for (const auto& hotkey : hotkeys) {
+            std::cout << hotkey.description << "\n";
         }
-        std::cout << "Key " << displayName << ": " << hotkey.description << "\n";
-    }
-    std::cout << std::endl;
+        std::cout << "W: Move camera forward\n";
+        std::cout << "S: Move camera backward\n";
+        std::cout << "A: Move camera left\n";
+        std::cout << "D: Move camera right\n";
+        std::cout << "Up: Camera control (context-dependent)\n";
+        std::cout << "Down: Camera control (context-dependent)\n";
+        std::cout << "Left: Camera control (context-dependent)\n";
+        std::cout << "Right: Camera control (context-dependent)\n";
+        std::cout << "Tab + G: Switch to Engine Mode\n";
+        std::cout << "Tab + N: Switch to DCC Mode\n";
+        std::cout << std::endl;
+    };
+
+    // Print initial controls
+    printControls(currentMode);
 
     float lastFrame = static_cast<float>(glfwGetTime());
     while (!glfwWindowShouldClose(window)) {
@@ -113,21 +143,39 @@ int main() {
         float deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        // Process camera movement (W, A, S, D handled here)
-        camera.processInput(window, deltaTime);
-
-        // Process hotkeys
-        static float toggleCooldown = 0.0f;
-        toggleCooldown -= deltaTime;
-        if (toggleCooldown <= 0.0f) {
-            for (const auto& hotkey : hotkeys) {
+        // Process mode switching
+        static float modeCooldown = 0.0f;
+        modeCooldown -= deltaTime;
+        bool modeSwitched = false;
+        if (modeCooldown <= 0.0f && glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) {
+            for (const auto& hotkey : modeHotkeys) {
                 if (glfwGetKey(window, hotkey.key) == GLFW_PRESS) {
                     hotkey.action(renderer);
-                    toggleCooldown = 0.2f;
-                    break; // Prevent multiple actions per frame
+                    modeCooldown = 0.2f;
+                    modeSwitched = true;
+                    printControls(currentMode);
+                    break;
                 }
             }
         }
+
+        // Process mode-specific hotkeys
+        static float hotkeyCooldown = 0.0f;
+        hotkeyCooldown -= deltaTime;
+        bool spacebarPressed = (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS);
+        if (hotkeyCooldown <= 0.0f && currentMode == AppMode::DCC && spacebarPressed) {
+            for (const auto& hotkey : dccHotkeys) {
+                if (glfwGetKey(window, hotkey.key) == GLFW_PRESS) {
+                    hotkey.action(renderer);
+                    hotkeyCooldown = 0.2f;
+                    std::cout << "Hotkey triggered: " << hotkey.description << "\n";
+                    break;
+                }
+            }
+        }
+
+        // Process camera movement, suppressing in DCC mode when Spacebar is pressed
+        camera.processInput(window, deltaTime, currentMode == AppMode::DCC, spacebarPressed);
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

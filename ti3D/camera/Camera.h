@@ -37,8 +37,10 @@ public:
      * @brief Processes keyboard and mouse input for zooming, panning, and view/projection mode switching.
      * @param window GLFW window for input polling.
      * @param deltaTime Time since last frame (in seconds) for smooth movement.
+     * @param dccMode True if in DCC mode, to suppress movement during Spacebar.
+     * @param spacebarPressed True if Spacebar is pressed, to zero movement in DCC mode.
      */
-    void processInput(GLFWwindow* window, float deltaTime);
+    void processInput(GLFWwindow* window, float deltaTime, bool dccMode = false, bool spacebarPressed = false);
 
     /**
      * @brief Processes mouse input for panning.

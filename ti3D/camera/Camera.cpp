@@ -1,21 +1,32 @@
 ﻿#include "Camera.h"
 #include <algorithm>
+#include <iostream>
 
 namespace Ti3D {
 
-void Camera::processInput(GLFWwindow* window, float deltaTime) {
+void Camera::processInput(GLFWwindow* window, float deltaTime, bool dccMode, bool spacebarPressed) {
     const float distanceStep = 0.1f;
     const float moveSpeed = 5.0f; // Units per second
+
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
+
     // Zoom
+    float distanceDelta = 0.0f;
     if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS) {
-        distance = std::max(1.0f, distance - distanceStep);
+        distanceDelta -= distanceStep;
     }
     if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS) {
-        distance = std::min(1000.0f, distance + distanceStep);
+        distanceDelta += distanceStep;
     }
+    // Suppress zoom in DCC mode when Spacebar is pressed
+    if (dccMode && spacebarPressed) {
+        distanceDelta = 0.0f;
+        std::cout << "Camera zoom suppressed: Spacebar pressed in DCC mode\n";
+    }
+    distance = std::max(1.0f, std::min(1000.0f, distance + distanceDelta));
+
     // Pan
     TiMath::Vector3 moveDir(0.0f, 0.0f, 0.0f);
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
@@ -38,10 +49,18 @@ void Camera::processInput(GLFWwindow* window, float deltaTime) {
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         moveDir += TiMath::Vector3(1.0f, 0.0f, 0.0f); // Right in all views
     }
+    // Suppress panning in DCC mode when Spacebar is pressed
+    if (dccMode && spacebarPressed) {
+        moveDir = TiMath::Vector3(0.0f, 0.0f, 0.0f);
+        std::cout << "Camera panning suppressed: Spacebar pressed in DCC mode\n";
+    }
     if (!moveDir.isZero()) {
         moveDir = moveDir.normalized();
+        std::cout << "Camera moving: moveDir=(" << moveDir.x << ", " << moveDir.y << ", " << moveDir.z 
+                  << "), target=(" << target.x << ", " << target.y << ", " << target.z << ")\n";
     }
     target += moveDir * moveSpeed * deltaTime;
+
     // Switch view mode
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
         viewMode = ViewMode::Top;
@@ -103,15 +122,10 @@ TiMath::Matrix4 Camera::getViewMatrix() const {
             up = TiMath::Vector3(0.0f, 0.0f, 1.0f);
             break;
         case ViewMode::Far:
-            // Start with position along -Z axis
             position = TiMath::Vector3(0.0f, 0.0f, -distance);
-            // Apply Y-axis rotation (yaw)
             TiMath::Matrix4 rotY = TiMath::Matrix4::rotationAxis(TiMath::Vector3(0.0f, 1.0f, 0.0f), yawDegrees);
-            // Apply X-axis rotation (pitch)
             TiMath::Matrix4 rotX = TiMath::Matrix4::rotationAxis(TiMath::Vector3(1.0f, 0.0f, 0.0f), pitchDegrees);
-            // Combine rotations (Y then X)
             TiMath::Matrix4 rot = rotX * rotY;
-            // Transform position as a point (w=1)
             TiMath::Vector3 transformedPos(
                 rot.m[0] * position.x + rot.m[4] * position.y + rot.m[8] * position.z + rot.m[12],
                 rot.m[1] * position.x + rot.m[5] * position.y + rot.m[9] * position.z + rot.m[13],
