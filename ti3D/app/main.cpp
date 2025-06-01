@@ -113,6 +113,7 @@ int main() {
         float deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
+        // Process camera movement (W, A, S, D handled here)
         camera.processInput(window, deltaTime);
 
         // Process hotkeys
