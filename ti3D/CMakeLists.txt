@@ -9,6 +9,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Set paths for third-party libraries
 set(GLFW3_DIR "C:/Users/pc/Desktop/Dev/ti3D/ThirdParty/glfw-3.4")
 set(GLAD_DIR "C:/Users/pc/Desktop/Dev/ti3D/ThirdParty/gladLib")
+set(IMGUI_DIR "C:/Users/pc/Desktop/Dev/ti3D/ThirdParty/imgui")
 
 # Define GLAD as a static library
 add_library(glad STATIC
