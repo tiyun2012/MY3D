@@ -3,6 +3,7 @@
 
 #include "../TiMath/Vector3.h"
 #include "../TiMath/Matrix4.h"
+#include "../TiMath/Quaternion.h" // Add this include for Quaternion
 #include <GLFW/glfw3.h>
 
 namespace Ti3D {
@@ -77,6 +78,30 @@ public:
      * @param distance The distance from the point to the camera.
      */
     void focusOnPoint(const TiMath::Vector3& point, float distance);
+
+    /**
+     * @brief Orbits the camera around a specific point based on mouse movement.
+     * @param point The point to orbit around.
+     * @param deltaX The change in mouse X position.
+     * @param deltaY The change in mouse Y position.
+     * @param sensitivity The sensitivity of the orbiting motion.
+     */
+    void orbitAroundPoint(const TiMath::Vector3& point, float deltaX, float deltaY, float sensitivity = 0.3f);
+
+    // Arcball orbit API
+    void startArcball(const TiMath::Vector3& point, float mouseX, float mouseY, float width, float height);
+    void updateArcball(const TiMath::Vector3& point, float mouseX, float mouseY, float width, float height);
+    void endArcball();
+    TiMath::Vector3 projectToArcball(float mouseX, float mouseY, float width, float height, const TiMath::Vector3& center, float radius);
+
+    TiMath::Vector3 getPosition() const;
+    void setPosition(const TiMath::Vector3& pos);
+
+private:
+    bool arcballActive = false;
+    TiMath::Vector3 arcballStartVec;
+    TiMath::Vector3 arcballStartCamPos;
+    float arcballRadius = 1.0f; // You can adjust this as needed
 };
 
 } // namespace Ti3D

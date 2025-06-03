@@ -1,6 +1,7 @@
 ﻿#include <algorithm>
 #include <iostream>
 #include "Camera.h"
+#include "../TiMath/Quaternion.h" // <-- Add this line if not present
 
 namespace Ti3D {
 
@@ -151,6 +152,93 @@ void Camera::focusOnPoint(const TiMath::Vector3& point, float distance) {
         // Camera position will be computed in getViewMatrix using yaw and pitch
     }
     // For other view modes, getViewMatrix will compute position based on target and distance
+}
+
+void Camera::orbitAroundPoint(const TiMath::Vector3& point, float deltaX, float deltaY, float sensitivity) {
+    // Convert deltas to angles (in degrees)
+    float yawDelta = deltaX * sensitivity;
+    float pitchDelta = deltaY * sensitivity;
+
+    // Update yaw/pitch (clamp pitch to avoid flipping)
+    yawDegrees += yawDelta;
+    pitchDegrees += pitchDelta;
+    pitchDegrees = std::clamp(pitchDegrees, -89.0f, 89.0f);
+
+    // Compute new camera position in spherical coordinates
+    float radYaw = yawDegrees * TiMath::PI / 180.0f;
+    float radPitch = pitchDegrees * TiMath::PI / 180.0f;
+
+    float x = point.x + distance * std::cos(radPitch) * std::sin(radYaw);
+    float y = point.y + distance * std::sin(radPitch);
+    float z = point.z + distance * std::cos(radPitch) * std::cos(radYaw);
+
+    target = point; // Always look at the aim point
+
+    // Print debug info
+    std::cout << "[Orbit] Yaw: " << yawDegrees << " Pitch: " << pitchDegrees
+              << " (ΔYaw: " << yawDelta << ", ΔPitch: " << pitchDelta << ")\n";
+}
+
+// Project screen coordinates to a virtual sphere around the target
+TiMath::Vector3 Camera::projectToArcball(float mouseX, float mouseY, float width, float height, const TiMath::Vector3& center, float radius) {
+    // Normalize to [-1, 1]
+    float x = (2.0f * mouseX - width) / width;
+    float y = (height - 2.0f * mouseY) / height;
+    float z2 = radius * radius - x * x - y * y;
+    float z = z2 > 0.0f ? std::sqrt(z2) : 0.0f;
+    return TiMath::Vector3(x, y, z).normalized();
+}
+
+void Camera::startArcball(const TiMath::Vector3& point, float mouseX, float mouseY, float width, float height) {
+    arcballActive = true;
+    arcballStartCamPos = getPosition(); // Implement getPosition() to get camera world pos
+    arcballStartVec = projectToArcball(mouseX, mouseY, width, height, point, arcballRadius);
+}
+
+void Camera::updateArcball(const TiMath::Vector3& point, float mouseX, float mouseY, float width, float height) {
+    if (!arcballActive) return;
+    TiMath::Vector3 currVec = projectToArcball(mouseX, mouseY, width, height, point, arcballRadius);
+
+    // Compute rotation quaternion from startVec to currVec
+    TiMath::Vector3 axis = arcballStartVec.cross(currVec);
+    float dot = std::clamp(arcballStartVec.dot(currVec), -1.0f, 1.0f);
+    float angle = std::acos(dot);
+
+    if (axis.isZero() || angle == 0.0f) return;
+
+    TiMath::Quaternion q = TiMath::Quaternion::fromAxisAngle(axis.normalized(), angle);
+
+    // Rotate camera position around the point
+    TiMath::Vector3 camOffset = arcballStartCamPos - point;
+    TiMath::Vector3 newOffset = q.rotateVector(camOffset);
+    TiMath::Vector3 newCamPos = point + newOffset;
+
+    // Update camera position and target
+    setPosition(newCamPos); // Implement setPosition() to update camera position
+    target = point;
+}
+
+void Camera::endArcball() {
+    arcballActive = false;
+}
+
+TiMath::Vector3 Camera::getPosition() const {
+    // For Far view mode (orbit), reconstruct position from yaw/pitch/distance/target
+    float radYaw = yawDegrees * TiMath::PI / 180.0f;
+    float radPitch = pitchDegrees * TiMath::PI / 180.0f;
+    return target + TiMath::Vector3(
+        distance * std::cos(radPitch) * std::sin(radYaw),
+        distance * std::sin(radPitch),
+        distance * std::cos(radPitch) * std::cos(radYaw)
+    );
+}
+
+void Camera::setPosition(const TiMath::Vector3& pos) {
+    // Update yaw/pitch/distance based on new position and target
+    TiMath::Vector3 offset = pos - target;
+    distance = offset.length();
+    yawDegrees = std::atan2(offset.x, offset.z) * 180.0f / TiMath::PI;
+    pitchDegrees = std::asin(offset.y / distance) * 180.0f / TiMath::PI;
 }
 
 } // namespace Ti3D

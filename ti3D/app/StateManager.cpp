@@ -172,8 +172,37 @@ void StateManager::updateMouseClickState(GLFWwindow* window) {
 
 void StateManager::updateCameraInput(GLFWwindow* window, double xpos, double ypos) {
     static double lastX = xpos, lastY = ypos;
-    static bool lastPState = false;
-    static bool lastZoomState = false;
+    static bool isAltLMBDragging = false;
+    static double dragStartX = 0, dragStartY = 0;
+
+    bool altPressed = (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_ALT) == GLFW_PRESS);
+    bool lmbPressed = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
+
+    if (altPressed && lmbPressed) {
+        if (!isAltLMBDragging) {
+            // Start drag
+            isAltLMBDragging = true;
+            dragStartX = xpos;
+            dragStartY = ypos;
+            if (cameraManager && renderer) {
+                Camera& cam = cameraManager->getActiveCamera();
+                const TiMath::Vector3& aim = renderer->targetCamAim.position;
+                cam.startArcball(aim, float(xpos), float(ypos), windowWidth, windowHeight);
+            }
+        } else {
+            if (cameraManager && renderer) {
+                Camera& cam = cameraManager->getActiveCamera();
+                const TiMath::Vector3& aim = renderer->targetCamAim.position;
+                cam.updateArcball(aim, float(xpos), float(ypos), windowWidth, windowHeight);
+                cameraUpdate = true;
+            }
+        }
+    } else if (isAltLMBDragging) {
+        isAltLMBDragging = false;
+        if (cameraManager) {
+            cameraManager->getActiveCamera().endArcball();
+        }
+    }
 
     // View mode switches
     if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS ||
@@ -184,22 +213,14 @@ void StateManager::updateCameraInput(GLFWwindow* window, double xpos, double ypo
         cameraUpdate = true;
     }
 
-    // Projection toggle
-    bool currentPState = (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS);
-    if (currentPState && !lastPState) {
-        cameraUpdate = true;
-    }
-    lastPState = currentPState;
+    
 
     // Zoom
     bool currentZoomState = (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS ||
                              glfwGetKey(window, GLFW_KEY_KP_ADD) == GLFW_PRESS ||
                              glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS ||
                              glfwGetKey(window, GLFW_KEY_KP_SUBTRACT) == GLFW_PRESS);
-    if (currentZoomState && !lastZoomState) {
-        cameraUpdate = true;
-    }
-    lastZoomState = currentZoomState;
+    
 
     // Mouse panning
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {

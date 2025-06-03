@@ -61,6 +61,9 @@ public:
     // Add reference to Renderer for TargetCamAim access
     void setRenderer(Renderer* rdr) { renderer = rdr; }
 
+    int windowWidth = 800;
+    int windowHeight = 600;
+
 private:
     AppMode currentMode;
     bool spacebarPressed;
