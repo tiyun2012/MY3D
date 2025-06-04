@@ -80,12 +80,12 @@ int main() {
         stateManager.updateMouseClickState(window);
 
         // Update camera input
-        double xpos, ypos;
-        glfwGetCursorPos(window, &xpos, &ypos);
-        stateManager.updateCameraInput(window, xpos, ypos);
+        // double xpos, ypos;
+        // glfwGetCursorPos(window, &xpos, &ypos);
+        // stateManager.updateCameraInput(window, xpos, ypos);
 
         // Process camera movement, suppressing in DCC mode when Spacebar is pressed
-        cameraManager.getActiveCamera().processInput(window, deltaTime, stateManager.getMode() == Ti3D::AppMode::DCC, stateManager.isSpacebarPressed());
+        // cameraManager.getActiveCamera().processInput(window, deltaTime, stateManager.getMode() == Ti3D::AppMode::DCC, stateManager.isSpacebarPressed());
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

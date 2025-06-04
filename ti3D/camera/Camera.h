@@ -40,7 +40,6 @@ public:
      * @param dccMode True if in DCC mode, to suppress movement during Spacebar.
      * @param spacebarPressed True if Spacebar is pressed, to zero movement in DCC mode.
      */
-    void processInput(GLFWwindow* window, float deltaTime, bool dccMode = false, bool spacebarPressed = false);
 
     /**
      * @brief Processes mouse input for panning.

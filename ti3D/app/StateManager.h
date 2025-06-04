@@ -46,7 +46,6 @@ public:
     void updateMouseClickState(GLFWwindow* window);
 
     // Process camera input and set CameraUpdate
-    void updateCameraInput(GLFWwindow* window, double xpos, double ypos);
 
     // Getter for CameraUpdate
     bool isCameraUpdated() const { return cameraUpdate; }
