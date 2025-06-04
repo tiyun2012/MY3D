@@ -69,6 +69,7 @@ private:
     bool spacebarPressed;
     float hotkeyCooldown;
     float modeCooldown;
+    bool FKeyPressed; // Tracks if F key is pressed
     ContextType currentContext;
     bool cameraUpdate; // Tracks if camera state changed
     Renderer* renderer = nullptr; // Added Renderer reference

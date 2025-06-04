@@ -6,28 +6,11 @@
 
 namespace Ti3D {
 
-const std::map<int, std::string> StateManager::specialKeyNames = {
-    { GLFW_KEY_SPACE, "Space" },
-    { GLFW_KEY_TAB, "Tab" },
-    { GLFW_KEY_UP, "Up" },
-    { GLFW_KEY_DOWN, "Down" },
-    { GLFW_KEY_LEFT, "Left" },
-    { GLFW_KEY_RIGHT, "Right" },
-    { GLFW_KEY_W, "W" },
-    { GLFW_KEY_A, "A" },
-    { GLFW_KEY_S, "S" },
-    { GLFW_KEY_D, "D" },
-    { GLFW_KEY_G, "G" },
-    { GLFW_KEY_N, "N" },
-    { GLFW_KEY_Q, "Q" },
-    { GLFW_KEY_E, "E" },
-    { GLFW_KEY_Z, "Z" },
-    { GLFW_KEY_X, "X" }
-};
 
 StateManager::StateManager()
     : currentMode(AppMode::DCC), spacebarPressed(false), hotkeyCooldown(0.0f), 
-      modeCooldown(0.0f), currentContext(ContextType::None), cameraUpdate(false) {
+      modeCooldown(0.0f), currentContext(ContextType::None), cameraUpdate(false),
+      FKeyPressed(false){
     // DCC Mode hotkeys
     dccHotkeys = {
         { GLFW_KEY_A, "Space + A: Toggle axes visibility",
@@ -146,10 +129,18 @@ void StateManager::stateActions(GLFWwindow *window)
 
 void StateManager::focusOnTarget(GLFWwindow* window)
 {
-   if ((glfwGetMouseButton(window, GLFW_KEY_F) == GLFW_PRESS))
+   bool isCurrentFPressed = (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS);
+   if (isCurrentFPressed && !FKeyPressed)
    {
        std::cout << "Focusing on .... \n";
+       
+       FKeyPressed = true;
    }
+   else if (!isCurrentFPressed)
+   {
+       FKeyPressed = false;
+   }
+
 }
 
 } // namespace Ti3D
