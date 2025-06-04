@@ -123,51 +123,33 @@ void StateManager::processHotkeys(GLFWwindow* window, Renderer& renderer) {
 }
 
 void StateManager::updateMouseClickState(GLFWwindow* window) {
+    
+    glfwGetCursorPos(window, &currentCursorX, &currentCursorY); // mouse state tracking
     static bool lastLeftClickState = false;
-    bool currentLeftClickState = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
+    // bool currentLeftClickState = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
 
-    if (currentLeftClickState && !lastLeftClickState) {
+    if ((glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)) 
+    {
         // Left click pressed: set to Viewport context
-        currentContext = ContextType::Viewport;
-        std::cout << "Context set to Viewport (1)\n";
-    } else if (!currentLeftClickState && lastLeftClickState) {
-        // Left click released: no change to context
-    }
+        // currentContext = ContextType::Viewport;
+        std::cout << "GLFW_PRESS\n";
+    } 
 
-    if (currentContext == ContextType::Viewport && glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
-        if (cameraManager && renderer) {
-            cameraManager->getActiveCamera().focusOnPoint(renderer->targetCamAim.position, 50.0f);
-            cameraUpdate = true;
-            std::cout << "Camera focusing on TargetCamAim at position (" 
-                      << renderer->targetCamAim.position.x << ", "
-                      << renderer->targetCamAim.position.y << ", "
-                      << renderer->targetCamAim.position.z << ")\n";
-        }
-    }
 
-    lastLeftClickState = currentLeftClickState;
-
-    // Check movement keys and print actions if in Viewport context
-    if (currentContext == ContextType::Viewport) {
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            std::cout << "Camera moving forward\n";
-            cameraUpdate = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            std::cout << "Camera moving backward\n";
-            cameraUpdate = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            std::cout << "Camera moving left\n";
-            cameraUpdate = true;
-        }
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            std::cout << "Camera moving right\n";
-            cameraUpdate = true;
-        }
-    }
+    
 }
 
+void StateManager::stateActions(GLFWwindow *window)
+{
+    focusOnTarget(window);
+}
 
+void StateManager::focusOnTarget(GLFWwindow* window)
+{
+   if ((glfwGetMouseButton(window, GLFW_KEY_F) == GLFW_PRESS))
+   {
+       std::cout << "Focusing on .... \n";
+   }
+}
 
 } // namespace Ti3D

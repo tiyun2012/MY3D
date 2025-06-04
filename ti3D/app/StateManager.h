@@ -39,8 +39,8 @@ public:
     void processHotkeys(GLFWwindow* window, Renderer& renderer);
     
     bool isSpacebarPressed() const { return spacebarPressed; }
-    
 
+    void focusOnTarget(GLFWwindow* window);
     // Update mouse click state and process movement keys based on context
     void updateMouseClickState(GLFWwindow* window);
 
@@ -58,11 +58,13 @@ public:
 
     // Add reference to Renderer for TargetCamAim access
     void setRenderer(Renderer* rdr) { renderer = rdr; }
-
+    void stateActions(GLFWwindow* window);
     int windowWidth = 800;
     int windowHeight = 600;
 
 private:
+
+    double currentCursorX = 0.0, currentCursorY = 0.0; // mouse state tracking
     AppMode currentMode;
     bool spacebarPressed;
     float hotkeyCooldown;
