@@ -40,7 +40,6 @@ public:
     
     bool isSpacebarPressed() const { return spacebarPressed; }
     
-    void printControls() const;
 
     // Update mouse click state and process movement keys based on context
     void updateMouseClickState(GLFWwindow* window);

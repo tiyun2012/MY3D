@@ -82,13 +82,11 @@ StateManager::StateManager()
           GLFW_KEY_TAB }
     };
 
-    printControls();
 }
 
 void StateManager::setMode(AppMode mode) {
     if (currentMode != mode) {
         currentMode = mode;
-        printControls();
     }
 }
 
@@ -171,24 +169,5 @@ void StateManager::updateMouseClickState(GLFWwindow* window) {
 }
 
 
-void StateManager::printControls() const {
-    std::cout << "Current Mode: " << (currentMode == AppMode::DCC ? "DCC" : "Engine") << "\n";
-    std::cout << "Controls:\n";
-    const auto& hotkeys = (currentMode == AppMode::DCC) ? dccHotkeys : engineHotkeys;
-    for (const auto& hotkey : hotkeys) {
-        std::cout << hotkey.description << "\n";
-    }
-    std::cout << "W: Move camera forward\n";
-    std::cout << "S: Move camera backward\n";
-    std::cout << "A: Move camera left\n";
-    std::cout << "D: Move camera right\n";
-    std::cout << "Up: Camera control (context-dependent)\n";
-    std::cout << "Down: Camera control (context-dependent)\n";
-    std::cout << "Left: Camera control (context-dependent)\n";
-    std::cout << "Right: Camera control (context-dependent)\n";
-    std::cout << "Tab + G: Switch to Engine Mode\n";
-    std::cout << "Tab + N: Switch to DCC Mode\n";
-    std::cout << std::endl;
-}
 
 } // namespace Ti3D
