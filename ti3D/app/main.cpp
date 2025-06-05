@@ -59,11 +59,11 @@ int main() {
     float initialAspectRatio = static_cast<float>(width) / static_cast<float>(height);
     cameraManager.getActiveCamera().setAspectRatio(initialAspectRatio);
     Ti3D::Renderer renderer(2.0f, 20.0f, 10, 2.0f);
-    Ti3D::StateManager stateManager;
+    Ti3D::StateManager stateManager(window);
     stateManager.setCameraManager(&cameraManager);
     stateManager.setRenderer(&renderer);
     glEnable(GL_DEPTH_TEST);
-
+    // glfwSetKeyCallback(window, keyCallback);
     glfwSetFramebufferSizeCallback(window, Ti3D::framebufferSizeCallback);
     glfwSetCursorPosCallback(window, Ti3D::mouseCallback);
     glfwSetWindowUserPointer(window, &cameraManager.getActiveCamera());

@@ -7,7 +7,7 @@
 namespace Ti3D {
 
 
-StateManager::StateManager()
+StateManager::StateManager(GLFWwindow* window)
     : currentMode(AppMode::DCC), spacebarPressed(false), hotkeyCooldown(0.0f), 
       modeCooldown(0.0f), currentContext(ContextType::None), cameraUpdate(false),
       FKeyPressed(false){

@@ -30,7 +30,7 @@ public:
         int modifier;
     };
 
-    StateManager();
+    StateManager(GLFWwindow* window);
     
     void setMode(AppMode mode);
     AppMode getMode() const { return currentMode; }
