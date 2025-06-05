@@ -67,8 +67,8 @@ public:
      * @param width Window width.
      * @param height Window height.
      */
-    void setAspectRatio(float width, float height) {
-        aspectRatio = width / height;
+    void setAspectRatio(float aspectRatio) {
+        this->aspectRatio = aspectRatio;
     }
 
     /**

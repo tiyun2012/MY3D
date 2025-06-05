@@ -3,14 +3,16 @@
 #include "../renderer/Renderer.h"
 #include "StateManager.h"
 #include <iostream>
-
 namespace Ti3D {
 static void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
     Camera* cam = static_cast<Camera*>(glfwGetWindowUserPointer(window));
-    if (cam) {
-        cam->setAspectRatio(static_cast<float>(width), static_cast<float>(height));
+    if (!cam) {
+        std::cerr << "Error: Camera pointer is null in framebufferSizeCallback" << std::endl;
+        return;
     }
+    float aspectRatio = (height > 0) ? static_cast<float>(width) / static_cast<float>(height) : 1.0f;
+    cam->setAspectRatio(aspectRatio); // Use single aspect ratio parameter if applicable
 }
 
 static void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
@@ -54,19 +56,17 @@ int main() {
     }
 
     Ti3D::CameraManager cameraManager;
-    cameraManager.getActiveCamera().setAspectRatio(static_cast<float>(width), static_cast<float>(height));
-    Ti3D::Renderer renderer(2.0f, 20.0f, 10, 2.0f); // Initial axis length, grid size, lines, spacing
+    float initialAspectRatio = static_cast<float>(width) / static_cast<float>(height);
+    cameraManager.getActiveCamera().setAspectRatio(initialAspectRatio);
+    Ti3D::Renderer renderer(2.0f, 20.0f, 10, 2.0f);
     Ti3D::StateManager stateManager;
     stateManager.setCameraManager(&cameraManager);
-    stateManager.setRenderer(&renderer); // Added Renderer reference
+    stateManager.setRenderer(&renderer);
     glEnable(GL_DEPTH_TEST);
 
     glfwSetFramebufferSizeCallback(window, Ti3D::framebufferSizeCallback);
     glfwSetCursorPosCallback(window, Ti3D::mouseCallback);
     glfwSetWindowUserPointer(window, &cameraManager.getActiveCamera());
-
-    double lastX = 0.0, lastY = 0.0;
-    glfwGetCursorPos(window, &lastX, &lastY);
 
     float lastFrame = static_cast<float>(glfwGetTime());
     while (!glfwWindowShouldClose(window)) {
@@ -74,7 +74,6 @@ int main() {
         float deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        // Update state, process hotkeys, and check mouse click state
         stateManager.updateHotkeyStates(window, deltaTime);
         stateManager.processHotkeys(window, renderer);
         stateManager.stateActions(window);
@@ -82,9 +81,8 @@ int main() {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        renderer.draw(cameraManager.getActiveCamera(), stateManager); // Updated to use new draw method
+        renderer.draw(cameraManager.getActiveCamera(), stateManager);
 
-        // Reset CameraUpdate after rendering
         stateManager.resetCameraUpdate();
 
         glfwSwapBuffers(window);
