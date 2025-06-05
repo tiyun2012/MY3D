@@ -4,6 +4,7 @@
 #include <functional>
 #include <vector>
 #include <string>
+#include <iostream>
 #include <map>
 #include <GLFW/glfw3.h>
 #include "../camera/CameraManager.h"
@@ -61,7 +62,15 @@ public:
     void stateActions(GLFWwindow* window);
     int windowWidth = 800;
     int windowHeight = 600;
-
+    static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) 
+    {
+        if (action == GLFW_PRESS) 
+        {
+            std::cout << "Key " << key << " pressed!" << std::endl;
+        } else if (action == GLFW_RELEASE) {
+            std::cout << "Key " << key << " released!" << std::endl;
+        }
+    }
 private:
 
     double currentCursorX = 0.0, currentCursorY = 0.0; // mouse state tracking

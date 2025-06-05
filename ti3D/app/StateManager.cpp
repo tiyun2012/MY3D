@@ -64,7 +64,7 @@ StateManager::StateManager(GLFWwindow* window)
           [this](Renderer&) { setMode(AppMode::DCC); },
           GLFW_KEY_TAB }
     };
-
+    glfwSetKeyCallback(window, keyCallback);
 }
 
 void StateManager::setMode(AppMode mode) {
