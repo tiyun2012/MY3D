@@ -31,18 +31,17 @@ public:
         int modifier;
     };
 
-    StateManager(GLFWwindow* window);
+    StateManager(GLFWwindow* window,Renderer & renderer);
     
     void setMode(AppMode mode);
     AppMode getMode() const { return currentMode; }
     
     void updateHotkeyStates(GLFWwindow* window, float deltaTime);
-    void processHotkeys(GLFWwindow* window, Renderer& renderer);
+    void processHotkeys(GLFWwindow* window, Renderer& renderer,float deltaTime);
     
     bool isSpacebarPressed() const { return spacebarPressed; }
 
-    void focusOnTarget(GLFWwindow* window);
-    // Update mouse click state and process movement keys based on context
+    
     void updateMouseClickState(GLFWwindow* window);
 
     // Process camera input and set CameraUpdate
@@ -58,19 +57,15 @@ public:
     void setCameraManager(CameraManager* mgr) { cameraManager = mgr; }
 
     // Add reference to Renderer for TargetCamAim access
-    void setRenderer(Renderer* rdr) { renderer = rdr; }
-    void stateActions(GLFWwindow* window);
+    void setRenderer(Renderer* rdr) { currentRenderer = rdr; }
     int windowWidth = 800;
     int windowHeight = 600;
-    static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) 
-    {
-        if (action == GLFW_PRESS) 
-        {
-            std::cout << "Key " << key << " pressed!" << std::endl;
-        } else if (action == GLFW_RELEASE) {
-            std::cout << "Key " << key << " released!" << std::endl;
-        }
-    }
+    static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) ;
+    static Renderer* currentRenderer ; // Added Renderer reference
+    static const std::map<int, std::string> keyboardMap;
+    
+
+
 private:
 
     double currentCursorX = 0.0, currentCursorY = 0.0; // mouse state tracking
@@ -81,13 +76,12 @@ private:
     bool FKeyPressed; // Tracks if F key is pressed
     ContextType currentContext;
     bool cameraUpdate; // Tracks if camera state changed
-    Renderer* renderer = nullptr; // Added Renderer reference
+    
     
     std::vector<Hotkey> dccHotkeys;
     std::vector<Hotkey> engineHotkeys;
     std::vector<Hotkey> modeHotkeys;
     
-    static const std::map<int, std::string> specialKeyNames;
 };
 
 } // namespace Ti3D

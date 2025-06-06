@@ -7,11 +7,13 @@
 namespace Ti3D {
 
 
-StateManager::StateManager(GLFWwindow* window)
+StateManager::StateManager(GLFWwindow* window,Renderer & renderer)
     : currentMode(AppMode::DCC), spacebarPressed(false), hotkeyCooldown(0.0f), 
       modeCooldown(0.0f), currentContext(ContextType::None), cameraUpdate(false),
-      FKeyPressed(false){
-    // DCC Mode hotkeys
+      FKeyPressed(false) {
+        
+    
+        // DCC Mode hotkeys
     dccHotkeys = {
         { GLFW_KEY_A, "Space + A: Toggle axes visibility",
           [](Renderer& r) { r.setRenderFlags(!r.getRenderAxes(), r.getRenderGrid()); },
@@ -64,7 +66,8 @@ StateManager::StateManager(GLFWwindow* window)
           [this](Renderer&) { setMode(AppMode::DCC); },
           GLFW_KEY_TAB }
     };
-    glfwSetKeyCallback(window, keyCallback);
+    currentRenderer= &renderer; // Store reference to Renderer
+    // glfwSetKeyCallback(window, keyCallback); can be removed if not needed
 }
 
 void StateManager::setMode(AppMode mode) {
@@ -79,32 +82,40 @@ void StateManager::updateHotkeyStates(GLFWwindow* window, float deltaTime) {
     modeCooldown -= deltaTime;
 }
 
-void StateManager::processHotkeys(GLFWwindow* window, Renderer& renderer) {
-    // Process mode switching
-    if (modeCooldown <= 0.0f && glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) {
-        for (const auto& hotkey : modeHotkeys) {
-            if (glfwGetKey(window, hotkey.key) == GLFW_PRESS) {
-                hotkey.action(renderer);
-                modeCooldown = 0.2f;
-                std::cout << "Hotkey triggered: " << hotkey.description << "\n";
-                return;
-            }
-        }
-    }
+void StateManager::processHotkeys(GLFWwindow* window, Renderer& renderer,float deltaTime) 
+{
+    hotkeyCooldown -= deltaTime;
+    modeCooldown -= deltaTime;
 
-    // Process mode-specific hotkeys
-    if (hotkeyCooldown <= 0.0f && currentMode == AppMode::DCC && spacebarPressed) {
-        for (const auto& hotkey : dccHotkeys) {
-            if (glfwGetKey(window, hotkey.key) == GLFW_PRESS) {
-                hotkey.action(renderer);
-                hotkeyCooldown = 0.2f;
-                std::cout << "Hotkey triggered: " << hotkey.description << "\n";
-                break;
-            }
+    if ((hotkeyCooldown <= 0.0f) && (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) 
+                                && (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS))
+    {
+        if(glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)                   
+        {
+          
+            currentRenderer->renderAxes = !currentRenderer->renderAxes;
+            std::cout << "Toggled: Origin Axis \n";
+            hotkeyCooldown = 0.2f;
         }
+        //Grid Display 
+        if(glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)                   
+        {
+          // Toggle grid visibility
+          currentRenderer->renderGrid = !currentRenderer->renderGrid;
+          std::cout << "Toggled: Grid \n";
+          hotkeyCooldown = 0.2f;
+        }
+        if(glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)                   
+        {
+          
+            currentRenderer->increaseGridLines(1);
+            std::cout << "Increased Grid Lines \n";
+            hotkeyCooldown = 0.2f;
+
+        }
+
     }
 }
-
 void StateManager::updateMouseClickState(GLFWwindow* window) {
     
     glfwGetCursorPos(window, &currentCursorX, &currentCursorY); // mouse state tracking
@@ -122,25 +133,38 @@ void StateManager::updateMouseClickState(GLFWwindow* window) {
     
 }
 
-void StateManager::stateActions(GLFWwindow *window)
-{
-    focusOnTarget(window);
-}
+Renderer* StateManager::currentRenderer = nullptr;
 
-void StateManager::focusOnTarget(GLFWwindow* window)
-{
-   bool isCurrentFPressed = (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS);
-   if (isCurrentFPressed && !FKeyPressed)
-   {
-       std::cout << "Focusing on .... \n";
-       
-       FKeyPressed = true;
-   }
-   else if (!isCurrentFPressed)
-   {
-       FKeyPressed = false;
-   }
 
+void StateManager::keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
+{
+ 
+    // Check if the key is a modifier key (e.g., Shift, Control, Alt)
+    if (mods & (GLFW_MOD_SHIFT | GLFW_MOD_CONTROL | GLFW_MOD_ALT)) {
+        std::cout << "Modifier key pressed: " << key << "\n";
+        return;
+    }
+
+    // Handle spacebar press for toggling camera update
+    if (key == GLFW_KEY_SPACE) {
+        if (action == GLFW_PRESS) {
+            std::cout << "Spacebar pressed\n";
+            currentRenderer->targetCamAim.visible = !currentRenderer->targetCamAim.visible;
+        }
+        return; // Skip further processing for spacebar
+    }
+
+    // Process other keys
+if (action == GLFW_PRESS || action == GLFW_REPEAT) 
+    {
+      std::cout << "Key pressed: " <<key << "\n";
+      
+    } 
+    else if (action == GLFW_RELEASE) 
+   {
+          std::cout << "Key Release: \n";
+    } 
+        
 }
 
 } // namespace Ti3D

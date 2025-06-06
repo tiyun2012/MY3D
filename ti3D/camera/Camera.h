@@ -14,6 +14,10 @@ namespace Ti3D {
  */
 class Camera {
 public:
+    // enum class CameraViewType {
+    //     Perspective, Front, Left, Top
+    // };
+    // CameraViewType currentViewType = CameraViewType::Perspective;
     enum class ViewMode { Top, Left, Right, Bottom, Far };
     enum class ProjectionMode { Orthographic, Perspective };
 

@@ -59,9 +59,9 @@ int main() {
     float initialAspectRatio = static_cast<float>(width) / static_cast<float>(height);
     cameraManager.getActiveCamera().setAspectRatio(initialAspectRatio);
     Ti3D::Renderer renderer(2.0f, 20.0f, 10, 2.0f);
-    Ti3D::StateManager stateManager(window);
-    stateManager.setCameraManager(&cameraManager);
-    stateManager.setRenderer(&renderer);
+    Ti3D::StateManager stateManager(window, renderer);
+    // stateManager.setCameraManager(&cameraManager);
+    // stateManager.setRenderer(&renderer);
     glEnable(GL_DEPTH_TEST);
     // glfwSetKeyCallback(window, keyCallback);
     glfwSetFramebufferSizeCallback(window, Ti3D::framebufferSizeCallback);
@@ -74,9 +74,9 @@ int main() {
         float deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        stateManager.updateHotkeyStates(window, deltaTime);
-        stateManager.processHotkeys(window, renderer);
-        stateManager.stateActions(window);
+
+        // stateManager.updateHotkeyStates(window, deltaTime);
+        stateManager.processHotkeys(window, renderer, deltaTime);
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
