@@ -36,7 +36,6 @@ include_directories(
 set(SOURCES
     app/main.cpp
     camera/Camera.cpp
-    camera/CameraManager.cpp
     renderer/Renderer.cpp
     renderer/DebugPoint.cpp
     TiMath/Vector2.cpp

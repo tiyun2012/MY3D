@@ -82,7 +82,6 @@ int main() {
 
         // renderer.draw(cameraManager.getActiveCamera(), stateManager);
 
-        stateManager.resetCameraUpdate();
 
         glfwSwapBuffers(window);
         glfwPollEvents();

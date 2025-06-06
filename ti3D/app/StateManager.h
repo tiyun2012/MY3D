@@ -35,9 +35,7 @@ public:
     void setRenderer(Renderer* rdr) { currentRenderer = rdr; }
     int windowWidth = 800;
     int windowHeight = 600;
-    static Renderer* currentRenderer ; // Added Renderer reference
-    static Camera* currentCamera; // Added Camera reference
-
+    static Renderer* currentRenderer; // Added Renderer reference
 
 private:
 

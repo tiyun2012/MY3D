@@ -1,2 +1,3 @@
 # Ignore all files and folders in build/
 build/
+build/**
