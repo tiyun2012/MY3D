@@ -1,0 +1,13 @@
+## Application Hierarchy
+
+- **app/**
+  - `main.cpp`: Application entry point, main loop, and mode/context switching.
+  - `StateManager`: Handles global state and mode (DCC/Engine).
+- **camera/**
+  - `Camera`: Handles view/projection, input, and camera modes.
+  - `CameraManager`: Manages multiple camera presets/views.
+- **renderer/**
+  - `Renderer`: Draws axes, grid, and debug points.
+  - `DebugPoint`: Renders target/aim points for camera focus.
+- **TiMath/**
+  - Math utilities: `Vector2/3/4`, `Matrix4`, `Quaternion`.
