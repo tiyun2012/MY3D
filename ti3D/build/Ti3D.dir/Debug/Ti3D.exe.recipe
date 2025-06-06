@@ -2,10 +2,10 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>C:\Users\pc\Desktop\Dev\ti3D\build\x64\Debug\ZERO_CHECK</FullPath>
+      <FullPath>E:\dev\MY3D\ti3D\build\x64\Debug\ZERO_CHECK</FullPath>
     </ProjectOutput>
     <ProjectOutput>
-      <FullPath>C:\Users\pc\Desktop\Dev\ti3D\build\Debug\Ti3D.exe</FullPath>
+      <FullPath>E:\dev\MY3D\ti3D\build\Debug\Ti3D.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />

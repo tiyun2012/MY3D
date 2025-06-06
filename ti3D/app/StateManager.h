@@ -62,8 +62,7 @@ public:
     int windowHeight = 600;
     static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) ;
     static Renderer* currentRenderer ; // Added Renderer reference
-    static const std::map<int, std::string> keyboardMap;
-    
+    static Camera* currentCamera; // Added Camera reference
 
 
 private:

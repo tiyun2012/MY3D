@@ -1,8 +1,8 @@
-# Install script for directory: C:/Users/pc/Desktop/Dev/ti3D
+# Install script for directory: E:/dev/MY3D/ti3D
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "C:/Program Files/Ti3D")
+  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/Ti3D")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -47,6 +47,6 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-  file(WRITE "C:/Users/pc/Desktop/Dev/ti3D/build/${CMAKE_INSTALL_MANIFEST}"
+  file(WRITE "E:/dev/MY3D/ti3D/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

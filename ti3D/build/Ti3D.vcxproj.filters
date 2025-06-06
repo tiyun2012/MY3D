@@ -1,19 +1,46 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="C:\Users\pc\Desktop\Dev\ti3D\camera\Camera.cpp">
+    <ClCompile Include="E:\dev\MY3D\ti3D\app\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\pc\Desktop\Dev\ti3D\ThirdParty\gladLib\src\glad.c">
+    <ClCompile Include="E:\dev\MY3D\ti3D\camera\Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\dev\MY3D\ti3D\camera\CameraManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\dev\MY3D\ti3D\renderer\Renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\dev\MY3D\ti3D\renderer\DebugPoint.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\dev\MY3D\ti3D\TiMath\Vector2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\dev\MY3D\ti3D\TiMath\Vector3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\dev\MY3D\ti3D\TiMath\Vector4.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\dev\MY3D\ti3D\TiMath\quaternion.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\dev\MY3D\ti3D\TiMath\matrix4.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\dev\MY3D\ti3D\app\StateManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\pc\Desktop\Dev\ti3D\CMakeLists.txt" />
+    <CustomBuild Include="E:\dev\MY3D\ti3D\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{565CCDA9-70C4-33EC-9B9F-D59354547DCC}</UniqueIdentifier>
+      <UniqueIdentifier>{28780629-C351-34ED-88E5-DCB16FE283CA}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

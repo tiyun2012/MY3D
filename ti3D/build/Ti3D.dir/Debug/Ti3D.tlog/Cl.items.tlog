@@ -1,2 +1,11 @@
-C:\Users\pc\Desktop\Dev\ti3D\camera\Camera.cpp;C:\Users\pc\Desktop\Dev\ti3D\build\Ti3D.dir\Debug\Camera.obj
-C:\Users\pc\Desktop\Dev\ti3D\ThirdParty\gladLib\src\glad.c;C:\Users\pc\Desktop\Dev\ti3D\build\Ti3D.dir\Debug\glad.obj
+E:\dev\MY3D\ti3D\app\main.cpp;E:\dev\MY3D\ti3D\build\Ti3D.dir\Debug\main.obj
+E:\dev\MY3D\ti3D\camera\Camera.cpp;E:\dev\MY3D\ti3D\build\Ti3D.dir\Debug\Camera.obj
+E:\dev\MY3D\ti3D\camera\CameraManager.cpp;E:\dev\MY3D\ti3D\build\Ti3D.dir\Debug\CameraManager.obj
+E:\dev\MY3D\ti3D\renderer\Renderer.cpp;E:\dev\MY3D\ti3D\build\Ti3D.dir\Debug\Renderer.obj
+E:\dev\MY3D\ti3D\renderer\DebugPoint.cpp;E:\dev\MY3D\ti3D\build\Ti3D.dir\Debug\DebugPoint.obj
+E:\dev\MY3D\ti3D\TiMath\Vector2.cpp;E:\dev\MY3D\ti3D\build\Ti3D.dir\Debug\Vector2.obj
+E:\dev\MY3D\ti3D\TiMath\Vector3.cpp;E:\dev\MY3D\ti3D\build\Ti3D.dir\Debug\Vector3.obj
+E:\dev\MY3D\ti3D\TiMath\Vector4.cpp;E:\dev\MY3D\ti3D\build\Ti3D.dir\Debug\Vector4.obj
+E:\dev\MY3D\ti3D\TiMath\quaternion.cpp;E:\dev\MY3D\ti3D\build\Ti3D.dir\Debug\quaternion.obj
+E:\dev\MY3D\ti3D\TiMath\matrix4.cpp;E:\dev\MY3D\ti3D\build\Ti3D.dir\Debug\matrix4.obj
+E:\dev\MY3D\ti3D\app\StateManager.cpp;E:\dev\MY3D\ti3D\build\Ti3D.dir\Debug\StateManager.obj
