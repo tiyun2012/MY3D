@@ -20,12 +20,15 @@ enum class ContextType {
 
 // Forward declaration of Renderer
 class Renderer;
-
+class Camera;
 class StateManager 
 {
 public:
     
-    StateManager(GLFWwindow* window,Renderer & renderer);
+    StateManager(GLFWwindow* window,Renderer & renderer,Camera &camera);
+    static Renderer* currentRenderer; // Added Renderer reference
+    static Camera* currentCamera; // Added Camera reference
+    double currentCursorX = 0.0, currentCursorY = 0.0; // mouse state tracking
     void processHotkeys(GLFWwindow* window, Renderer& renderer, float deltaTime);
 
     void updateMouseClickState(GLFWwindow* window);
@@ -33,18 +36,16 @@ public:
 
     // Add reference to Renderer for TargetCamAim access
     void setRenderer(Renderer* rdr) { currentRenderer = rdr; }
-
-    static Renderer* currentRenderer; // Added Renderer reference
+    void setCamera(Camera* cam) { currentCamera = cam; }
 
 private:
 
-    double currentCursorX = 0.0, currentCursorY = 0.0; // mouse state tracking
     float hotkeyCooldown;
     float modeCooldown;
     bool FKeyPressed; // Tracks if F key is pressed
     ContextType currentContext;
     bool cameraUpdate; // Tracks if camera state changed
-
+    int windowWidth = 800, windowHeight = 600; // Default window size
 
 
 };

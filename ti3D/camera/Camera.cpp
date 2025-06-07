@@ -4,7 +4,11 @@
 #include "../TiMath/Quaternion.h" // <-- Add this line if not present
 
 namespace Ti3D {
-
+Camera::Camera()
+    : target(0.0f, 0.0f, 0.0f), distance(10.0f), aspectRatio(4.0f / 3.0f),
+      zNear(0.1f), zFar(100.0f), viewMode(ViewMode::Far),
+      projectionMode(ProjectionMode::Perspective), fovYDegrees(60.0f),
+      yawDegrees(60.0f), pitchDegrees(40.0f) {}
 
 void Camera::processMouseInput(GLFWwindow* window, double xpos, double ypos, float deltaTime) {
     static double lastX = 0.0, lastY = 0.0;

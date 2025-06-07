@@ -5,12 +5,16 @@
 
 namespace Ti3D {
 Renderer* StateManager::currentRenderer = nullptr;
+Camera* StateManager::currentCamera = nullptr;
 
-
-StateManager::StateManager(GLFWwindow* window,Renderer & renderer)
+StateManager::StateManager(GLFWwindow* window,Renderer & renderer,Camera &camera)
     :hotkeyCooldown(0.0f), modeCooldown(0.0f), currentContext(ContextType::None)
     {
         currentRenderer = &renderer;
+        this->currentCamera = &camera;
+        //camera initialization
+        glfwGetWindowSize(window, &windowWidth, &windowHeight);
+        currentCamera->setAspectRatio(static_cast<float>(windowWidth) / static_cast<float>(windowHeight)); // Set default aspect ratio
     }
 
 void StateManager::processHotkeys(GLFWwindow* window, Renderer& renderer,float deltaTime) 

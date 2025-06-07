@@ -77,15 +77,15 @@ int main() {
 
     // Initialize Camera
     Ti3D::Camera camera;
-    camera.setAspectRatio(static_cast<float>(width) / static_cast<float>(height));
-    camera.viewMode = Ti3D::Camera::ViewMode::Far; // Ensure perspective view
-    camera.projectionMode = Ti3D::Camera::ProjectionMode::Perspective;
+    // camera.setAspectRatio(static_cast<float>(width) / static_cast<float>(height));
+    // camera.viewMode = Ti3D::Camera::ViewMode::Far; // Ensure perspective view
+    // camera.projectionMode = Ti3D::Camera::ProjectionMode::Perspective;
 
     // Initialize Renderer
     Ti3D::Renderer renderer(2.0f, 20.0f, 10, 2.0f);
 
     // Initialize StateManager
-    Ti3D::StateManager stateManager(window, renderer);
+    Ti3D::StateManager stateManager(window, renderer, camera);
 
     // Set window user pointer to a struct containing Camera and StateManager
     struct WindowData {

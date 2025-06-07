@@ -14,6 +14,7 @@ namespace Ti3D {
  */
 class Camera {
 public:
+    // Enum for view modes
     enum class ViewMode { Top, Left, Right, Bottom, Far };
     enum class ProjectionMode { Orthographic, Perspective };
 
@@ -26,14 +27,12 @@ public:
     float fovYDegrees;
     float yawDegrees;   // Rotation around Y-axis
     float pitchDegrees; // Rotation around X-axis
-    double CameraWidth = 800.0; // Default width
-    double CameraHeight = 600.0; // Default height
-    double CameraAspectRatio = CameraWidth / CameraHeight;
-    Camera()
-        : target(0.0f, 0.0f, 0.0f), distance(10.0f), aspectRatio(4.0f / 3.0f),
-          zNear(0.1f), zFar(100.0f), viewMode(ViewMode::Far),
-          projectionMode(ProjectionMode::Perspective), fovYDegrees(60.0f),
-          yawDegrees(60.0f), pitchDegrees(40.0f) {}
+    float CameraWidth = 800.0f; // Default width
+    float CameraHeight = 600.0f; // Default height
+    float arcballRadius = 1.0f; // You can adjust this as needed
+
+    Camera();
+        
 
     /**
      * @brief Processes keyboard and mouse input for zooming, panning, and view/projection mode switching.
@@ -102,7 +101,6 @@ private:
     bool arcballActive = false;
     TiMath::Vector3 arcballStartVec;
     TiMath::Vector3 arcballStartCamPos;
-    float arcballRadius = 1.0f; // You can adjust this as needed
 };
 
 } // namespace Ti3D
