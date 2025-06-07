@@ -58,12 +58,15 @@ void StateManager::updateMouseClickState(GLFWwindow* window) {
         // Left click pressed: set to Viewport context
         // currentContext = ContextType::Viewport;
         std::cout << "GLFW_PRESS\n";
+    }
+    else 
+    {
+        currentContext = ContextType::None;
     } 
 
 
     
 }
-
 
 
 

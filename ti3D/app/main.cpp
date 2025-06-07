@@ -1,8 +1,9 @@
 #include <glad/glad.h>
-#include"../camera/Camera.h"
-#include "../renderer/Renderer.h"
+#include "Camera.h" // Include Camera.h directly
+#include "Renderer.h"
 #include "StateManager.h"
 #include <iostream>
+
 namespace Ti3D {
 static void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
@@ -12,7 +13,7 @@ static void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
         return;
     }
     float aspectRatio = (height > 0) ? static_cast<float>(width) / static_cast<float>(height) : 1.0f;
-    cam->setAspectRatio(aspectRatio); // Use single aspect ratio parameter if applicable
+    cam->setAspectRatio(aspectRatio);
 }
 
 static void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
@@ -23,6 +24,25 @@ static void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
         float deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
         cam->processMouseInput(window, xpos, ypos, deltaTime);
+        // Add arcball handling if needed
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+            StateManager* stateManager = static_cast<StateManager*>(glfwGetWindowUserPointer(window));
+            cam->updateArcball(TiMath::Vector3(0, 0, 0), xpos, ypos, stateManager->windowWidth, stateManager->windowHeight);
+        }
+    }
+}
+
+static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+    Camera* cam = static_cast<Camera*>(glfwGetWindowUserPointer(window));
+    StateManager* stateManager = static_cast<StateManager*>(glfwGetWindowUserPointer(window));
+    if (cam && stateManager) {
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+        if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
+            cam->startArcball(TiMath::Vector3(0, 0, 0), xpos, ypos, stateManager->windowWidth, stateManager->windowHeight);
+        } else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
+            cam->endArcball();
+        }
     }
 }
 } // namespace Ti3D
@@ -54,18 +74,33 @@ int main() {
         glfwTerminate();
         return -1;
     }
-    // Ti3D::CameraManager cameraManager;
-    // float initialAspectRatio = static_cast<float>(width) / static_cast<float>(height);
-    // cameraManager.getActiveCamera().setAspectRatio(initialAspectRatio);
+
+    // Initialize Camera
+    Ti3D::Camera camera;
+    camera.setAspectRatio(static_cast<float>(width) / static_cast<float>(height));
+    camera.viewMode = Ti3D::Camera::ViewMode::Far; // Ensure perspective view
+    camera.projectionMode = Ti3D::Camera::ProjectionMode::Perspective;
+
+    // Initialize Renderer
     Ti3D::Renderer renderer(2.0f, 20.0f, 10, 2.0f);
+
+    // Initialize StateManager
     Ti3D::StateManager stateManager(window, renderer);
-    // stateManager.setCameraManager(&cameraManager);
-    // stateManager.setRenderer(&renderer);
+    stateManager.windowWidth = width;
+    stateManager.windowHeight = height;
+
+    // Set window user pointer to a struct containing Camera and StateManager
+    struct WindowData {
+        Ti3D::Camera* camera;
+        Ti3D::StateManager* stateManager;
+    };
+    WindowData windowData = {&camera, &stateManager};
+    glfwSetWindowUserPointer(window, &windowData);
+
     glEnable(GL_DEPTH_TEST);
-    // glfwSetKeyCallback(window, keyCallback);
     glfwSetFramebufferSizeCallback(window, Ti3D::framebufferSizeCallback);
     glfwSetCursorPosCallback(window, Ti3D::mouseCallback);
-    // glfwSetWindowUserPointer(window, &cameraManager.getActiveCamera());
+    glfwSetMouseButtonCallback(window, Ti3D::mouseButtonCallback);
 
     float lastFrame = static_cast<float>(glfwGetTime());
     while (!glfwWindowShouldClose(window)) {
@@ -73,15 +108,14 @@ int main() {
         float deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-
-        // stateManager.updateHotkeyStates(window, deltaTime);
         stateManager.processHotkeys(window, renderer, deltaTime);
+        stateManager.updateMouseClickState(window);
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // renderer.draw(cameraManager.getActiveCamera(), stateManager);
-
+        // Render the scene
+        renderer.draw(camera, stateManager);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

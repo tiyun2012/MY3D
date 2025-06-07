@@ -230,6 +230,8 @@ void Renderer::setGridParameters(int lines, float spacing, float size) {
 void Renderer::draw(const Camera& camera, const StateManager& stateManager) {
     if (renderAxes) drawAxes(camera, stateManager);
     if (renderGrid) drawGrid(camera, stateManager);
+    TiMath::Matrix4 view = camera.getViewMatrix();
+    TiMath::Matrix4 proj = camera.getProjectionMatrix();
     drawTargetCamAim(camera);
 }
 
