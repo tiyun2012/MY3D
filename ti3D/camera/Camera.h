@@ -26,7 +26,9 @@ public:
     float fovYDegrees;
     float yawDegrees;   // Rotation around Y-axis
     float pitchDegrees; // Rotation around X-axis
-
+    double CameraWidth = 800.0; // Default width
+    double CameraHeight = 600.0; // Default height
+    double CameraAspectRatio = CameraWidth / CameraHeight;
     Camera()
         : target(0.0f, 0.0f, 0.0f), distance(10.0f), aspectRatio(4.0f / 3.0f),
           zNear(0.1f), zFar(100.0f), viewMode(ViewMode::Far),
@@ -89,7 +91,7 @@ public:
 
     // Arcball orbit API
     void startArcball(const TiMath::Vector3& point, float mouseX, float mouseY, float width, float height);
-    void updateArcball(const TiMath::Vector3& point, float mouseX, float mouseY, float width, float height);
+    void updateArcball(const TiMath::Vector3& point, double mouseX, double mouseY, double width, double height);
     void endArcball();
     TiMath::Vector3 projectToArcball(float mouseX, float mouseY, float width, float height, const TiMath::Vector3& center, float radius);
 

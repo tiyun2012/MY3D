@@ -13,43 +13,7 @@
 
 ### Usage
 
-- **Controls:**  
-  - `Esc`: Exit
-  - `P`: Toggle projection mode
-  - `T/L/R/B/F`: Switch camera views
-  - `=/-`: Zoom
-  - `W/A/S/D`: Pan
-  - `Space` + hotkeys: Toggle axes/grid, adjust grid, switch views
-  - `Tab` + hotkeys: Switch app mode
-  - **General:**
-    - `Esc`: Close the application.
-    - `P`: Toggle between Perspective and Orthographic projections.
-    - `T`: Switch to Top view.
-    - `L`: Switch to Left view.
-    - `R`: Switch to Right view.
-    - `B`: Switch to Bottom view.
-    - `F`: Switch to Far view or focus on TargetCamAim (in Viewport context).
-    - `=`, `+`: Zoom in.
-    - `-`, `_`: Zoom out.
-    - `W`, `A`, `S`, `D`: Pan camera (direction depends on view mode).
-
-  - **DCC Mode Hotkeys (with Space held):**
-    - `A`: Toggle axes visibility.
-    - `G`: Toggle grid visibility.
-    - `Q`: Increase grid size by 1 unit.
-    - `E`: Decrease grid size by 1 unit.
-    - `Z`: Increase grid lines by 1.
-    - `X`: Decrease grid lines by 1.
-    - `1` to `6`: Switch camera to Perspective, Front, Left, Top, Back, or Right view.
-
-  - **Mode Switching (with Tab held):**
-    - `G`: Switch to Engine mode.
-    - `N`: Switch to DCC mode.
-
-- **Mouse**
-
-  - `Left-click`: Set Viewport context.
-  - `Left-click + drag`: Pan the camera (scaled by distance).
+- 
 
 
 ## Application Hierarchy
@@ -59,7 +23,6 @@
   - `StateManager`: Handles global state and mode (DCC/Engine).
 - **camera/**
   - `Camera`: Handles view/projection, input, and camera modes.
-  - `CameraManager`: Manages multiple camera presets/views.
 - **renderer/**
   - `Renderer`: Draws axes, grid, and debug points.
   - `DebugPoint`: Renders target/aim points for camera focus.
@@ -69,14 +32,7 @@
 
 ## Features
 
-- Multiple camera views (Perspective, Top, Left, Right, Bottom, Far)
-- Toggle between Perspective and Orthographic projections
-- Camera orbit, pan, and zoom (keyboard and mouse)
-- DCC and Engine modes with context-sensitive controls
-- Customizable grid and axes (visibility, size, lines)
-- Debug point rendering for camera target/aim
-- Modular math library for 3D operations
-- OpenGL rendering with GLAD/GLFW backend
+-
 
 
 ## How to Use

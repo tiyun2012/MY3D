@@ -33,8 +33,7 @@ public:
 
     // Add reference to Renderer for TargetCamAim access
     void setRenderer(Renderer* rdr) { currentRenderer = rdr; }
-    int windowWidth = 800;
-    int windowHeight = 600;
+
     static Renderer* currentRenderer; // Added Renderer reference
 
 private:

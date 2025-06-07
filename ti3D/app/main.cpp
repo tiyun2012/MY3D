@@ -27,7 +27,7 @@ static void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
         // Add arcball handling if needed
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
             StateManager* stateManager = static_cast<StateManager*>(glfwGetWindowUserPointer(window));
-            cam->updateArcball(TiMath::Vector3(0, 0, 0), xpos, ypos, stateManager->windowWidth, stateManager->windowHeight);
+            cam->updateArcball(TiMath::Vector3(0, 0, 0), xpos, ypos, cam->CameraWidth, cam->CameraHeight);
         }
     }
 }
@@ -39,7 +39,7 @@ static void mouseButtonCallback(GLFWwindow* window, int button, int action, int 
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
         if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
-            cam->startArcball(TiMath::Vector3(0, 0, 0), xpos, ypos, stateManager->windowWidth, stateManager->windowHeight);
+            cam->startArcball(TiMath::Vector3(0, 0, 0), xpos, ypos, cam->CameraWidth, cam->CameraHeight);
         } else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
             cam->endArcball();
         }
@@ -86,8 +86,6 @@ int main() {
 
     // Initialize StateManager
     Ti3D::StateManager stateManager(window, renderer);
-    stateManager.windowWidth = width;
-    stateManager.windowHeight = height;
 
     // Set window user pointer to a struct containing Camera and StateManager
     struct WindowData {

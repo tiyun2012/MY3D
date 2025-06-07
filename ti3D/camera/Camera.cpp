@@ -108,7 +108,7 @@ void Camera::startArcball(const TiMath::Vector3& point, float mouseX, float mous
     arcballStartVec = projectToArcball(mouseX, mouseY, width, height, point, arcballRadius);
 }
 
-void Camera::updateArcball(const TiMath::Vector3& point, float mouseX, float mouseY, float width, float height) {
+void Camera::updateArcball(const TiMath::Vector3& point, double mouseX, double mouseY, double width, double height) {
     if (!arcballActive) return;
     TiMath::Vector3 currVec = projectToArcball(mouseX, mouseY, width, height, point, arcballRadius);
 
