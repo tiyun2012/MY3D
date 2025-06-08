@@ -1,54 +1,82 @@
 #include <glad/glad.h>
-#include "Camera.h" // Include Camera.h directly
-#include "Renderer.h"
-#include "StateManager.h"
+
 #include <iostream>
 
-namespace Ti3D {
-static void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
+#include "Camera.h"  // Include Camera.h directly
+#include "Renderer.h"
+#include "StateManager.h"
+#include "WindowData.h"  // Include WindowData.h for WindowData struct
+
+namespace Ti3D
+{
+static void framebufferSizeCallback(GLFWwindow* window, int width, int height)
+{
     glViewport(0, 0, width, height);
-    Camera* cam = static_cast<Camera*>(glfwGetWindowUserPointer(window));
-    if (!cam) {
-        std::cerr << "Error: Camera pointer is null in framebufferSizeCallback" << std::endl;
+    WindowData* data =
+        static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+    if (!data || !data->camera)
+    {
+        std::cerr << "Error: WindowData or Camera pointer is null in "
+                     "framebufferSizeCallback"
+                  << std::endl;
         return;
     }
-    float aspectRatio = (height > 0) ? static_cast<float>(width) / static_cast<float>(height) : 1.0f;
-    cam->setAspectRatio(aspectRatio);
+    float aspectRatio =
+        (height > 0) ? static_cast<float>(width) / static_cast<float>(height)
+                     : 1.0f;
+    data->camera->setAspectRatio(aspectRatio);
 }
 
-static void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
-    Camera* cam = static_cast<Camera*>(glfwGetWindowUserPointer(window));
-    if (cam) {
+static void mouseCallback(GLFWwindow* window, double xpos, double ypos)
+{
+    WindowData* data =
+        static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+    if (data && data->camera)
+    {
         static float lastFrame = static_cast<float>(glfwGetTime());
         float currentFrame = static_cast<float>(glfwGetTime());
         float deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
-        cam->processMouseInput(window, xpos, ypos, deltaTime);
-        // Add arcball handling if needed
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
-            StateManager* stateManager = static_cast<StateManager*>(glfwGetWindowUserPointer(window));
-            cam->updateArcball(TiMath::Vector3(0, 0, 0), xpos, ypos, cam->CameraWidth, cam->CameraHeight);
+        data->camera->processMouseInput(window, xpos, ypos, deltaTime);
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+        {
+            if (data->stateManager)
+            {
+                data->camera->updateArcball(TiMath::Vector3(0, 0, 0), xpos,
+                                            ypos, data->camera->CameraWidth,
+                                            data->camera->CameraHeight);
+            }
         }
     }
 }
 
-static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
-    Camera* cam = static_cast<Camera*>(glfwGetWindowUserPointer(window));
-    StateManager* stateManager = static_cast<StateManager*>(glfwGetWindowUserPointer(window));
-    if (cam && stateManager) {
+static void mouseButtonCallback(GLFWwindow* window, int button, int action,
+                                int mods)
+{
+    WindowData* data =
+        static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+    if (data && data->camera && data->stateManager)
+    {
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
-        if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
-            cam->startArcball(TiMath::Vector3(0, 0, 0), xpos, ypos, cam->CameraWidth, cam->CameraHeight);
-        } else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
-            cam->endArcball();
+        if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+        {
+            data->camera->startArcball(TiMath::Vector3(0, 0, 0), xpos, ypos,
+                                       data->camera->CameraWidth,
+                                       data->camera->CameraHeight);
+        }
+        else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
+        {
+            data->camera->endArcball();
         }
     }
 }
-} // namespace Ti3D
+}  // namespace Ti3D
 
-int main() {
-    if (!glfwInit()) {
+int main()
+{
+    if (!glfwInit())
+    {
         std::cerr << "Failed to initialize GLFW" << std::endl;
         return -1;
     }
@@ -61,15 +89,18 @@ int main() {
 #endif
 
     int width = 800, height = 600;
-    GLFWwindow* window = glfwCreateWindow(width, height, "Ti3D", nullptr, nullptr);
-    if (!window) {
+    GLFWwindow* window =
+        glfwCreateWindow(width, height, "Ti3D", nullptr, nullptr);
+    if (!window)
+    {
         std::cerr << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return -1;
     }
     glfwMakeContextCurrent(window);
 
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
         std::cerr << "Failed to initialize GLAD" << std::endl;
         glfwTerminate();
         return -1;
@@ -77,8 +108,9 @@ int main() {
 
     // Initialize Camera
     Ti3D::Camera camera;
-    // camera.setAspectRatio(static_cast<float>(width) / static_cast<float>(height));
-    // camera.viewMode = Ti3D::Camera::ViewMode::Far; // Ensure perspective view
+    // camera.setAspectRatio(static_cast<float>(width) /
+    // static_cast<float>(height)); camera.viewMode =
+    // Ti3D::Camera::ViewMode::Far; // Ensure perspective view
     // camera.projectionMode = Ti3D::Camera::ProjectionMode::Perspective;
 
     // Initialize Renderer
@@ -88,7 +120,8 @@ int main() {
     Ti3D::StateManager stateManager(window, renderer, camera);
 
     // Set window user pointer to a struct containing Camera and StateManager
-    struct WindowData {
+    struct WindowData
+    {
         Ti3D::Camera* camera;
         Ti3D::StateManager* stateManager;
     };
@@ -101,7 +134,8 @@ int main() {
     glfwSetMouseButtonCallback(window, Ti3D::mouseButtonCallback);
 
     float lastFrame = static_cast<float>(glfwGetTime());
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(window))
+    {
         float currentFrame = static_cast<float>(glfwGetTime());
         float deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
