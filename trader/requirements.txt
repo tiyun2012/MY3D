@@ -1,0 +1,11 @@
+yfinance
+pandas
+numpy
+TA-Lib
+scikit-learn
+tensorflow
+matplotlib
+NewsApiClient
+textblob
+datetime
+nltk
