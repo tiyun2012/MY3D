@@ -77,7 +77,9 @@ include_directories(
 
 # Source files
 set(SOURCES
-    app/main.cpp
+    # app/main.cpp
+    UI/main.cpp
+    
     camera/Camera.cpp
     renderer/Renderer.cpp
     renderer/DebugPoint.cpp
