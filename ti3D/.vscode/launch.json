@@ -6,10 +6,10 @@
             "name": "Debug Ti3D (bin)",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/bin/Ti3D.exe",
+            "program": "${workspaceFolder}/build/debug/Ti3D.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/build/bin",
+            "cwd": "${workspaceFolder}/build",
             "environment": [],
             "console": "integratedTerminal",
             "preLaunchTask": "CMake: Build"

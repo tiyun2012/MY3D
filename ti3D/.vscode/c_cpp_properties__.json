@@ -6,8 +6,10 @@
                 "${workspaceFolder}/TiMath",
                 "${workspaceFolder}/camera",
                 "${workspaceFolder}/renderer",
-                "C:/Users/pc/Desktop/Dev/ti3D/ThirdParty/glfw-3.4/include",
-                "C:/Users/pc/Desktop/Dev/ti3D/ThirdParty/gladLib/include"
+                "${workspaceFolder}/ThirdParty/gladLib/include",
+                "${workspaceFolder}/ThirdParty/glfw-3.4/include",
+                "${workspaceFolder}/ThirdParty/imgui",
+                "${workspaceFolder}/ThirdParty/imgui/backends"
             ],
             "defines": [],
             "compilerPath": "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.x.x/bin/Hostx64/x64/cl.exe",
