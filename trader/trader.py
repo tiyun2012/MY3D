@@ -1,108 +1,119 @@
-# -*- coding: utf-8 -*-
-import yfinance as yf
-import pandas as pd
-import numpy as np
-import talib
-from sklearn.preprocessing import MinMaxScaler
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense
-import matplotlib.pyplot as plt
-import os
+"""Dependency and environment checker for trading/data science stack."""
 
-# ====================
-# 1. Fetch Gold Data
-# ====================
-def fetch_gold_data():
-    print("Fetching gold data from Yahoo Finance...")
-    try:
-        # GC=F is Gold Futures, for spot gold try "XAU=USD" (may not always work)
-        gold = yf.download("GC=F", start="2020-01-01", end="2025-06-01", progress=False)
-        gold.to_csv("gold_data.csv")
-        print(f"Data saved to {os.getcwd()}\\gold_data.csv")
-        return gold
-    except Exception as e:
-        print(f"Error fetching data: {e}")
-        return None
+import sys
+import importlib.metadata
 
-# ====================
-# 2. Preprocess Data
-# ====================
-def preprocess_data(gold):
-    print("Adding technical indicators...")
-    gold['SMA_50'] = talib.SMA(gold['Close'], timeperiod=50)
-    gold['RSI'] = talib.RSI(gold['Close'], timeperiod=14)
-    gold['MACD'], _, _ = talib.MACD(gold['Close'], fastperiod=12, slowperiod=26, signalperiod=9)
-    gold.dropna(inplace=True)
-    gold.to_csv("gold_with_indicators.csv")
-    return gold
+print(f"Python version: {sys.version}")
+print(f"Virtual environment: {sys.executable}")
 
-# ====================
-# 3. Build LSTM Model
-# ====================
-def build_model(gold):
-    print("Building LSTM model...")
-    scaler = MinMaxScaler()
-    features = gold[['Close', 'SMA_50', 'RSI', 'MACD']]
-    scaled_data = scaler.fit_transform(features)
+try:
+    import yfinance
+    print(f"yfinance version: {yfinance.__version__}")
+except ImportError as e:
+    print(f"Failed to import yfinance: {e}")
 
-    # Create sequences
-    def create_sequences(data, window=60):
-        X, y = [], []
-        for i in range(window, len(data)):
-            X.append(data[i-window:i])
-            y.append(data[i, 0])  # Predict 'Close' price
-        return np.array(X), np.array(y)
+try:
+    import pandas
+    print(f"pandas version: {pandas.__version__}")
+except ImportError as e:
+    print(f"Failed to import pandas: {e}")
 
-    X, y = create_sequences(scaled_data)
-    split = int(0.8 * len(X))
-    X_train, X_test = X[:split], X[split:]
-    y_train, y_test = y[:split], y[split:]
+try:
+    import numpy
+    print(f"numpy version: {numpy.__version__}")
+    NUMPY_AVAILABLE = True
+except ImportError as e:
+    print(f"Failed to import numpy: {e}")
+    NUMPY_AVAILABLE = False
 
-    model = Sequential([
-        LSTM(50, return_sequences=True, input_shape=(X_train.shape[1], X_train.shape[2])),
-        LSTM(50),
-        Dense(1)
-    ])
-    model.compile(optimizer='adam', loss='mse')
-    history = model.fit(X_train, y_train, epochs=10, batch_size=32, 
-                       validation_data=(X_test, y_test), verbose=1)
-    return model, scaler, X_test
+try:
+    import sklearn
+    print(f"scikit-learn version: {sklearn.__version__}")
+except ImportError as e:
+    print(f"Failed to import scikit-learn: {e}")
 
-# ====================
-# 4. Visualize Results
-# ====================
-def plot_results(gold, model, scaler, X_test):
-    print("Generating predictions...")
-    predictions = model.predict(X_test)
-    # Inverse transform predictions
-    predictions = scaler.inverse_transform(
-        np.concatenate((predictions, np.zeros((len(predictions), 3))), axis=1))[:, 0]
-    
-    # Get corresponding dates
-    test_dates = gold.index[-len(predictions):]
-    
-    plt.figure(figsize=(12, 6))
-    plt.plot(test_dates, gold['Close'].values[-len(predictions):], label='Actual Price', color='blue')
-    plt.plot(test_dates, predictions, label='Predicted Price', color='red', linestyle='--')
-    plt.title("Gold Price Prediction (LSTM Model)")
-    plt.xlabel("Date")
-    plt.ylabel("Price (USD)")
-    plt.legend()
-    plt.grid()
-    plt.savefig("gold_prediction.png")
-    print(f"Plot saved to {os.getcwd()}\\gold_prediction.png")
-    plt.show()
+try:
+    import tensorflow
+    print(f"tensorflow version: {tensorflow.__version__}")
+except ImportError as e:
+    print(f"Failed to import tensorflow: {e}")
 
-# ====================
-# Main Execution
-# ====================
-if __name__ == "__main__":
-    # Step 1: Fetch data
-    gold = fetch_gold_data()
-    if gold is not None:
-        # Step 2: Preprocess
-        gold = preprocess_data(gold)
-        # Step 3: Build model
-        model, scaler, X_test = build_model(gold)
-        # Step 4: Visualize
-        plot_results(gold, model, scaler, X_test)
+try:
+    import matplotlib
+    print(f"matplotlib version: {matplotlib.__version__}")
+except ImportError as e:
+    print(f"Failed to import matplotlib: {e}")
+
+# Only import version, not the module, to avoid unused import warning
+try:
+    newsapi_version = importlib.metadata.version("newsapi-python")
+    print(f"newsapi-python version: {newsapi_version}")
+except importlib.metadata.PackageNotFoundError:
+    print("newsapi-python is installed but version could not be determined.")
+except ImportError as e:
+    print(f"Failed to import newsapi-python: {e}")
+
+try:
+    textblob_version = importlib.metadata.version("textblob")
+    print(f"textblob version: {textblob_version}")
+except importlib.metadata.PackageNotFoundError:
+    print("textblob is installed but version could not be determined.")
+except ImportError as e:
+    print(f"Failed to import textblob: {e}")
+
+try:
+    import nltk
+    print(f"nltk version: {nltk.__version__}")
+except ImportError as e:
+    print(f"Failed to import nltk: {e}")
+
+try:
+    alpha_vantage_version = importlib.metadata.version("alpha_vantage")
+    print(f"alpha_vantage version: {alpha_vantage_version}")
+except importlib.metadata.PackageNotFoundError:
+    print("alpha_vantage is installed but version could not be determined.")
+except ImportError as e:
+    print(f"Failed to import alpha_vantage: {e}")
+
+try:
+    vader_version = importlib.metadata.version("vaderSentiment")
+    print(f"vaderSentiment version: {vader_version}")
+except importlib.metadata.PackageNotFoundError:
+    print("vaderSentiment is installed but version could not be determined.")
+except ImportError as e:
+    print(f"Failed to import vaderSentiment: {e}")
+
+try:
+    import xgboost
+    print(f"xgboost version: {xgboost.__version__}")
+except ImportError as e:
+    print(f"Failed to import xgboost: {e}")
+
+try:
+    import plotly
+    print(f"plotly version: {plotly.__version__}")
+except ImportError as e:
+    print(f"Failed to import plotly: {e}")
+
+try:
+    import vectorbt
+    print(f"vectorbt version: {vectorbt.__version__}")
+except ImportError as e:
+    print(f"Failed to import vectorbt: {e}")
+
+try:
+    import talib
+    print(f"TA-Lib version: {talib.__version__}")
+    # Test a TA-Lib function to verify numpy compatibility
+    if NUMPY_AVAILABLE:
+        test_data = numpy.array([1, 2, 3, 4, 5.0])
+        sma = talib.SMA(test_data, timeperiod=2)  # type: ignore[attr-defined]
+        print("TA-Lib SMA test passed successfully.")
+    else:
+        print("Skipping TA-Lib SMA test: numpy not available.")
+except ImportError as e:
+    print(f"Failed to import TA-Lib: {e}")
+except (TypeError, AttributeError) as e:
+    print(f"TA-Lib test failed: {e}. Check numpy compatibility (requires numpy 2.x).")
+
+print("\nAll packages checked. If any failed to import, reinstall them individually.")

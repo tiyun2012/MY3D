@@ -1,0 +1,6 @@
+{
+  "python.terminal.activateEnvironment": true,
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.enableTroubleshootMissingImports": true,
+  "python.terminal.activateEnvInCurrentTerminal": true
+}
